@@ -1,0 +1,79 @@
+@import "tailwindcss";
+body {
+  background: linear-gradient(140deg, #5004c3, #006bc9);
+  background-size: 360% 360%;
+  animation: gradientFlow 8s ease infinite;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0 20px;
+  color: #fff;
+  font-family: var(--font-tajawal, Arial, Helvetica, sans-serif);
+  overflow-x: hidden;
+}
+
+button {
+  border: none;
+  border-radius: 9999px; /* pill style */
+  padding: 0.75rem 2rem;
+  background: linear-gradient(135deg, #19c989, #00a8c5);
+  color: white;
+  font-weight: 600;
+  font-size: 1rem;
+  text-transform: uppercase;
+
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: all 0.35s ease;
+  box-shadow: 0 4px 20px rgba(6, 182, 212, 0.3),
+    0 2px 8px rgba(52, 211, 153, 0.2);
+  backdrop-filter: blur(6px); /* glass effect */
+}
+
+button:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 8px 25px rgba(6, 182, 212, 0.4),
+    0 4px 12px rgba(52, 211, 153, 0.3);
+  background: linear-gradient(135deg, #06b6d4, #34d399);
+}
+
+button:active {
+  transform: scale(0.97);
+}
+
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color: black;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  font-weight: 500;
+  text-decoration: inherit;
+}
+@keyframes gradientFlow {
+  0% {
+    background-position: 0% 0%;
+  }
+  25% {
+    background-position: 50% 50%;
+  }
+  50% {
+    background-position: 100% 0%;
+  }
+  75% {
+    background-position: 50% 50%;
+  }
+  100% {
+    background-position: 0% 0%;
+  }
+}
+
+.animate-gradient {
+  animation: gradient 6s ease infinite;
+}
