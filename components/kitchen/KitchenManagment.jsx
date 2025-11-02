@@ -5,6 +5,7 @@ import {
   joinKitchen,
   onNewOrder,
   disconnectSocket,
+  onSocketConnect,
 } from "@/services/socket";
 
 function KitchenManagment({ kitchen, restaurant_id, user_id, token }) {
@@ -18,38 +19,51 @@ function KitchenManagment({ kitchen, restaurant_id, user_id, token }) {
 
     const socket = connectSocket();
 
-    joinKitchen(restaurant_id); // ✅ يدخل روم المطبخ
-
     // ✅ يسمع على الطلبات الجديدة
-    onNewOrder((order) => {
-      if (Notification.permission === "granted") {
-        new Notification("🍔 طلب جديد", {
-          body: `رقم الطلب: ${order.id}`,
-          icon: "/icons/order.png", // تقدر تحط لوجو أو أي صورة
+    // ✅ الحل: ننتظر حتى يتصل الـ Socket ثم ننفذ أوامر الانضمام والاشتراك
+    const handleConnect = () => {
+      console.log("✅ Socket connected. Joining kitchen room...");
+      joinKitchen(restaurant_id, (response) => {
+        console.log(
+          `✅ Room join confirmed: ${response.room}. Subscribing to events.`
+        );
+
+        onNewOrder((order) => {
+          if (Notification.permission === "granted") {
+            new Notification("🍔 طلب جديد", {
+              body: `رقم الطلب: ${order.id}`,
+              icon: "/icons/order.png", // تقدر تحط لوجو أو أي صورة
+            });
+          }
+
+          console.log("🍔 New Order:", order);
+          setOrders((prev) => {
+            const exists = prev.some((o) => o.id === order.id);
+            let updated = exists
+              ? prev.map((o) => (o.id === order.id ? order : o))
+              : [...prev, order];
+
+            // ✅ ترتيب الطلبات من الأكبر إلى الأصغر (30 فوق، 29 بعده)
+            updated.sort((a, b) => b.id - a.id);
+            return updated;
+          });
+
+          // صوت/نطق عند الطلب الجديد
+          const notifySound = new Audio("/sounds/ding.mp3");
+          notifySound.play();
+          handleNotifyNewOrder(order);
         });
-      }
+      }); // ✅ يدخل روم المطبخ
+    };
+    socket.on("connect", handleConnect);
+    if (socket.connected) {
+      handleConnect();
+    }
 
-      console.log("🍔 New Order:", order);
-      setOrders((prev) => {
-        const exists = prev.some((o) => o.id === order.id);
-        let updated = exists
-          ? prev.map((o) => (o.id === order.id ? order : o))
-          : [...prev, order];
-
-        // ✅ ترتيب الطلبات من الأكبر إلى الأصغر (30 فوق، 29 بعده)
-        updated.sort((a, b) => b.id - a.id);
-        return updated;
-      });
-
-      // صوت/نطق عند الطلب الجديد
-      const notifySound = new Audio("/sounds/ding.mp3");
-      notifySound.play();
-      handleNotifyNewOrder(order);
-    });
-
-    // ✅ تنظيف بعد الخروج من الصفحة
     return () => {
-      disconnectSocket(); // أو socket.disconnect();
+      // تنظيف الحدث عند الخروج
+      socket.off("connect", handleConnect);
+      disconnectSocket();
     };
   }, []);
 

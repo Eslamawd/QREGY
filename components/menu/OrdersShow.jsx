@@ -23,31 +23,37 @@ export default function OrdersShow({ restaurant_id, user_id, token }) {
 
   // ✅ عند تشغيل الصفحة، نربط كل الأوردرات الحالية بالسوكت
   useEffect(() => {
-    if (orders.length > 0) {
-      connectSocket();
-      orders.forEach((order) => {
-        if (order.id) joinOrder(order.id);
-      });
+    const socket = connectSocket();
 
-      // ✅ عند استلام تحديث
-      onOrderUpdated(({ order_id, status }) => {
-        setStatus(order_id, status);
-        if (status === "payid") {
-          clearOrderLocal(order_id);
-        }
-      });
-    }
-  }, [orders]);
+    const joinAllOrders = () => {
+      if (orders.length > 0) {
+        orders.forEach((order) => {
+          if (order.id) joinOrder(order.id);
+        });
+      }
+    };
+    const handleOrderUpdate = ({ order_id, status }) => {
+      setStatus(order_id, status);
+      if (status === "payid") {
+        clearOrderLocal(order_id);
+      }
+    };
+
+    onOrderUpdated(handleOrderUpdate);
+    joinAllOrders();
+    // 4. التنظيف (ضروري)
+    return () => {
+      // إلغاء اشتراك المستمع لتجنب تكرار setStatus
+      socket.off("order_updated", handleOrderUpdate); // ليس من الضروري فصل الـ Socket هنا إذا كان التطبيق يعتمد عليه بشكل مستمر // disconnectSocket();
+    };
+  }, [orders.length, setStatus, clearOrderLocal]);
 
   // ✅ إرسال الطلب الحالي
   const handleSend = async () => {
     const res = await submitOrder(restaurant_id, user_id, token);
     if (res?.id) {
-      connectSocket();
-      joinOrder(res.id);
-      onOrderUpdated(({ order_id, status }) => {
-        setStatus(order_id, status);
-      });
+      // 🚨 لا نحتاج للاشتراك مرة أخرى، فالاشتراك تم في useEffect
+      joinOrder(res.id); // فقط ننضم إلى غرفة الطلب الجديد
     }
   };
 

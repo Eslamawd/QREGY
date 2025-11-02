@@ -9,12 +9,20 @@ export const connectSocket = () => {
   if (!socket) {
     socket = io(SOCKET_URL, {
       autoConnect: true,
-      transports: ["websocket"], // يقلّل مشاكل CORS
+      transports: ["websocket"],
     });
   } else if (!socket.connected) {
     socket.connect();
   }
   return socket;
+};
+
+export const onSocketConnect = (callback) => {
+  // التأكد من أن socket موجود
+  if (socket) {
+    // الاستماع لحدث 'connect' الذي يحدث عند اكتمال الاتصال
+    socket.on("connect", callback);
+  }
 };
 
 export const disconnectSocket = () => {
@@ -23,11 +31,14 @@ export const disconnectSocket = () => {
   }
 };
 
-export const joinKitchen = (restaurant_id) => {
-  socket?.emit("joinKitchen", { restaurant_id });
+// 🛑 التعديل هنا: إضافة (callback)
+export const joinKitchen = (restaurant_id, callback) => {
+  // نمرر الـ callback إلى الخادم
+  socket?.emit("joinKitchen", { restaurant_id }, callback);
 };
-export const joinCashier = (restaurant_id) => {
-  socket?.emit("joinCashier", { restaurant_id });
+
+export const joinCashier = (restaurant_id, callback) => {
+  socket?.emit("joinCashier", { restaurant_id }, callback);
 };
 
 export const joinOrder = (order_id) => {
@@ -35,9 +46,12 @@ export const joinOrder = (order_id) => {
 };
 
 export const onNewOrder = (callback) => {
+  // ملاحظة: يجب إزالة المستمع القديم قبل إضافة مستمع جديد لتجنب التكرار في useEffect
+  socket?.off("new_order");
   socket?.on("new_order", callback);
 };
 
 export const onOrderUpdated = (callback) => {
+  socket?.off("order_updated");
   socket?.on("order_updated", callback);
 };

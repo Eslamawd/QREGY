@@ -20,51 +20,67 @@ function CashierManagment({ cashier, restaurant_id, user_id, token }) {
 
     const socket = connectSocket();
 
-    joinCashier(restaurant_id); // ✅ يدخل روم المطبخ
+    const handleConnectAndJoin = () => {
+      console.log("✅ Socket connected. Attempting to join cashier room..."); // 1. نستخدم joinCashier مع Callback
 
-    onOrderUpdated(({ order_id, status }) => {
-      console.log("🔄 Order Updated:", order_id, status);
-      setOrders((prev) => {
-        const exists = prev.some((o) => o.id === order_id);
-        let updated = exists
-          ? prev.map((o) => (o.id === order_id ? { ...o, status } : o))
-          : [...prev, { id: order_id, status }];
+      joinCashier(restaurant_id, (response) => {
+        console.log(
+          `✅ Room join confirmed: ${response.room}. Subscribing to events.`
+        );
 
-        // ✅ ترتيب الطلبات من الأكبر إلى الأصغر (30 فوق، 29 بعده)
-        updated.sort((a, b) => b.id - a.id);
-        return updated;
-      });
-    });
-    // ✅ يسمع على الطلبات الجديدة
-    onNewOrder((order) => {
-      if (Notification.permission === "granted") {
-        new Notification("🍔 طلب جديد", {
-          body: `رقم الطلب: ${order.id}`,
-          icon: "/icons/order.png", // تقدر تحط لوجو أو أي صورة
+        onOrderUpdated(({ order_id, status }) => {
+          console.log("🔄 Order Updated:", order_id, status);
+          setOrders((prev) => {
+            const exists = prev.some((o) => o.id === order_id);
+            let updated = exists
+              ? prev.map((o) => (o.id === order_id ? { ...o, status } : o))
+              : [...prev, { id: order_id, status }];
+
+            // ✅ ترتيب الطلبات من الأكبر إلى الأصغر (30 فوق، 29 بعده)
+            updated.sort((a, b) => b.id - a.id);
+            return updated;
+          });
         });
-      }
+        // ✅ يسمع على الطلبات الجديدة
+        onNewOrder((order) => {
+          if (Notification.permission === "granted") {
+            new Notification("🍔 طلب جديد", {
+              body: `رقم الطلب: ${order.id}`,
+              icon: "/icons/order.png", // تقدر تحط لوجو أو أي صورة
+            });
+          }
 
-      console.log("🍔 New Order:", order);
-      setOrders((prev) => {
-        const exists = prev.some((o) => o.id === order.id);
-        let updated = exists
-          ? prev.map((o) => (o.id === order.id ? order : o))
-          : [...prev, order];
+          console.log("🍔 New Order:", order);
+          setOrders((prev) => {
+            const exists = prev.some((o) => o.id === order.id);
+            let updated = exists
+              ? prev.map((o) => (o.id === order.id ? order : o))
+              : [...prev, order];
 
-        // ✅ ترتيب الطلبات من الأكبر إلى الأصغر (30 فوق، 29 بعده)
-        updated.sort((a, b) => b.id - a.id);
-        return updated;
+            // ✅ ترتيب الطلبات من الأكبر إلى الأصغر (30 فوق، 29 بعده)
+            updated.sort((a, b) => b.id - a.id);
+            return updated;
+          });
+
+          // صوت/نطق عند الطلب الجديد
+          const notifySound = new Audio("/sounds/ding.mp3");
+          notifySound.play();
+          handleNotifyNewOrder(order);
+        });
       });
+    };
 
-      // صوت/نطق عند الطلب الجديد
-      const notifySound = new Audio("/sounds/ding.mp3");
-      notifySound.play();
-      handleNotifyNewOrder(order);
-    });
-
+    socket.on("connect", handleConnectAndJoin);
+    if (socket.connected) {
+      handleConnectAndJoin();
+    }
     // ✅ تنظيف بعد الخروج من الصفحة
     return () => {
-      disconnectSocket(); // أو socket.disconnect();
+      socket.off("connect", handleConnectAndJoin);
+      // تنظيف مستمعي الأحداث المخصصة لمنع التكرار (مهم جداً)
+      socket.off("order_updated");
+      socket.off("new_order");
+      disconnectSocket();
     };
   }, []);
 
