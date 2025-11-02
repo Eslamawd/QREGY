@@ -8,8 +8,14 @@ let socket = null;
 export const connectSocket = () => {
   if (!socket) {
     socket = io(SOCKET_URL, {
-      autoConnect: true,
-      transports: ["websocket"],
+      // 💡 تأكد من تفعيل وإعداد خاصية إعادة الاتصال
+      reconnection: true, // تفعيل المحاولة التلقائية
+      reconnectionAttempts: Infinity, // حاول إلى الأبد
+      reconnectionDelay: 1000, // البدء بعد ثانية
+      reconnectionDelayMax: 5000, // الحد الأقصى للتأخير 5 ثواني
+
+      // 🚦 التأكد من النقل الصحيح
+      transports: ["websocket", "polling"],
     });
   } else if (!socket.connected) {
     socket.connect();
