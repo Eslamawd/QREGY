@@ -7,6 +7,7 @@ import {
   disconnectSocket,
   onSocketConnect,
 } from "@/services/socket";
+import InstallPrompt from "../InstallPrompt";
 
 function KitchenManagment({ kitchen, restaurant_id, user_id, token }) {
   const [orders, setOrders] = useState([]);
@@ -29,14 +30,6 @@ function KitchenManagment({ kitchen, restaurant_id, user_id, token }) {
         );
 
         onNewOrder((order) => {
-          if (Notification.permission === "granted") {
-            new Notification("🍔 طلب جديد", {
-              body: `رقم الطلب: ${order.id}`,
-              icon: "/icons/order.png", // تقدر تحط لوجو أو أي صورة
-            });
-          }
-
-          console.log("🍔 New Order:", order);
           setOrders((prev) => {
             const exists = prev.some((o) => o.id === order.id);
             let updated = exists
@@ -47,6 +40,14 @@ function KitchenManagment({ kitchen, restaurant_id, user_id, token }) {
             updated.sort((a, b) => b.id - a.id);
             return updated;
           });
+          if (Notification.permission === "granted") {
+            new Notification("🍔 طلب جديد", {
+              body: `رقم الطلب: ${order.id}`,
+              icon: "/icons/order.png", // تقدر تحط لوجو أو أي صورة
+            });
+          }
+
+          console.log("🍔 New Order:", order);
 
           // صوت/نطق عند الطلب الجديد
           const notifySound = new Audio("/sounds/ding.mp3");
@@ -172,6 +173,7 @@ function KitchenManagment({ kitchen, restaurant_id, user_id, token }) {
       <h1 className="text-3xl font-bold mb-6 text-center">
         🍳 لوحة تحكم المطبخ
       </h1>
+      <InstallPrompt />
 
       {/* زر لتفعيل الصوت (مطلوب لتمرير سياسات المتصفح) */}
       {!soundEnabled && (

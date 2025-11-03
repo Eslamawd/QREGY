@@ -1,5 +1,5 @@
 "use client";
-import { addNewOrder } from "@/lib/orderApi";
+import { addNewOrder, getOrderByUser } from "@/lib/orderApi";
 import { createContext, useContext, useState, useEffect } from "react";
 
 const OrderContext = createContext();
@@ -170,7 +170,6 @@ export const OrderProvider = ({ children }) => {
         clearOrder,
         startNewOrder,
         setRestaurantId,
-
         updateOrderStatus,
         setTableId,
         setStatus,

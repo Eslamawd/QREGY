@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import { useLanguage } from "@/context/LanguageContext";
 import { connectSocket, joinOrder, onOrderUpdated } from "@/services/socket";
 import { useCurrency } from "@/context/CurrencyContext";
+import { getOrderByUser } from "@/lib/orderApi";
 
 export default function OrdersShow({ restaurant_id, user_id, token }) {
   const {
@@ -22,13 +23,16 @@ export default function OrdersShow({ restaurant_id, user_id, token }) {
   const isArabic = lang === "ar";
 
   // ✅ عند تشغيل الصفحة، نربط كل الأوردرات الحالية بالسوكت
+
   useEffect(() => {
     const socket = connectSocket();
 
     const joinAllOrders = () => {
       if (orders.length > 0) {
         orders.forEach((order) => {
-          if (order.id) joinOrder(order.id);
+          if (order.id) {
+            joinOrder(order.id);
+          }
         });
       }
     };
@@ -69,7 +73,7 @@ export default function OrdersShow({ restaurant_id, user_id, token }) {
     );
 
   return (
-    <div className="container mx-auto py-10 font-cairo px-4 bg-blue-900 sm:px-6 lg:px-8">
+    <div className="container mx-auto py-10 font-cairo px-4  sm:px-6 lg:px-8">
       <h1 className="text-2xl font-bold mb-6 text-center text-white">
         {isArabic ? "كل الطلبات" : "All Orders"}
       </h1>

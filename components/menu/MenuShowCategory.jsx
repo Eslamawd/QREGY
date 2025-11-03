@@ -43,7 +43,7 @@ const MenuShowCategory = ({ table_id, restaurant_id, user_id, token }) => {
   return (
     <section
       dir={isArabic ? "rtl" : "ltr"}
-      className="min-h-screen bg-gradient-to-b from-blue-900/95 via-gray-700/90 to-blue-700/95 border border-white/10 shadow-2xl backdrop-blur-md"
+      className="min-h-screen bg-gradient-to-b from-black  to-gray-600 border border-white/10 shadow-2xl backdrop-blur-md"
     >
       {/* Header */}
       <MenuHeader
@@ -139,7 +139,7 @@ const MenuShowCategory = ({ table_id, restaurant_id, user_id, token }) => {
               exit={{ scale: 0.9, opacity: 0 }}
               transition={{ type: "spring", stiffness: 200, damping: 20 }}
             >
-              <div className="rounded-2xl shadow-xl w-full max-w-5xl h-[90vh] overflow-y-auto relative bg-blue-900">
+              <div className="rounded-2xl shadow-xl w-full max-w-5xl h-[90vh] overflow-y-auto relative bg-black">
                 <button
                   onClick={() => setSelectedMenu(null)}
                   className="absolute top-4 right-4 bg-gray-200 hover:bg-gray-300 rounded-full p-2 z-50"

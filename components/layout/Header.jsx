@@ -27,7 +27,7 @@ export const Header = () => {
         <div className="mx-auto max-w-7xl px-4 pt-2 flex items-center justify-between">
           {/* Logo */}
           <Link href={"/"} className="flex items-center gap-3">
-            <div className=" font-bold animate-gradient bg-gradient-to-r from-emerald-400 via-red-500 to-blue-900 bg-clip-text text-transparent bg-[length:200%_200%] text-4xl">
+            <div className=" font-bold  animate-gradient bg-gradient-to-r from-gray-400  to-gray-900 bg-clip-text text-transparent bg-[length:200%_200%] text-4xl">
               QR
             </div>
           </Link>

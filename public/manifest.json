@@ -1,0 +1,21 @@
+{
+  "name": "QREGY Menu",
+  "short_name": "QREGY",
+  "start_url": "/menu",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffcc00",
+  "description": "Smart Restaurant Menu",
+  "icons": [
+    {
+      "src": "/qregylogo.jpg",
+      "sizes": "192x192",
+      "type": "image/jpg"
+    },
+    {
+      "src": "/qregylogo.jpg",
+      "sizes": "512x512",
+      "type": "image/jpg"
+    }
+  ]
+}

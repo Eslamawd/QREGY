@@ -1,4 +1,4 @@
-import { getOrdersByCashier, updateOrderByCashier } from "@/lib/orderApi";
+import { getOrdersByCashier, updateOrderByCashier } from "@/lib/orderApi"; // ✅ تم تصحيح المسار
 import React, { useEffect, useRef, useState } from "react";
 import {
   connectSocket,
@@ -6,84 +6,16 @@ import {
   onNewOrder,
   disconnectSocket,
   onOrderUpdated,
-} from "@/services/socket";
+} from "@/services/socket"; // ✅ تم تصحيح المسار
 import { toast } from "sonner";
+import InstallPrompt from "../InstallPrompt";
 
 function CashierManagment({ cashier, restaurant_id, user_id, token }) {
   const [orders, setOrders] = useState([]);
+  // ✅ استخدام useRef لتخزين مثيل Socket.io (لتحسين الـ Cleanup)
+  const socketRef = useRef(null);
 
-  const [soundEnabled, setSoundEnabled] = useState(false);
-  const audioRef = useRef(null);
-
-  useEffect(() => {
-    getOrders();
-
-    const socket = connectSocket();
-
-    const handleConnectAndJoin = () => {
-      console.log("✅ Socket connected. Attempting to join cashier room..."); // 1. نستخدم joinCashier مع Callback
-
-      joinCashier(restaurant_id, (response) => {
-        console.log(
-          `✅ Room join confirmed: ${response.room}. Subscribing to events.`
-        );
-
-        onOrderUpdated(({ order_id, status }) => {
-          console.log("🔄 Order Updated:", order_id, status);
-          setOrders((prev) => {
-            const exists = prev.some((o) => o.id === order_id);
-            let updated = exists
-              ? prev.map((o) => (o.id === order_id ? { ...o, status } : o))
-              : [...prev, { id: order_id, status }];
-
-            // ✅ ترتيب الطلبات من الأكبر إلى الأصغر (30 فوق، 29 بعده)
-            updated.sort((a, b) => b.id - a.id);
-            return updated;
-          });
-        });
-        // ✅ يسمع على الطلبات الجديدة
-        onNewOrder((order) => {
-          if (Notification.permission === "granted") {
-            new Notification("🍔 طلب جديد", {
-              body: `رقم الطلب: ${order.id}`,
-              icon: "/icons/order.png", // تقدر تحط لوجو أو أي صورة
-            });
-          }
-
-          console.log("🍔 New Order:", order);
-          setOrders((prev) => {
-            const exists = prev.some((o) => o.id === order.id);
-            let updated = exists
-              ? prev.map((o) => (o.id === order.id ? order : o))
-              : [...prev, order];
-
-            // ✅ ترتيب الطلبات من الأكبر إلى الأصغر (30 فوق، 29 بعده)
-            updated.sort((a, b) => b.id - a.id);
-            return updated;
-          });
-
-          // صوت/نطق عند الطلب الجديد
-          const notifySound = new Audio("/sounds/ding.mp3");
-          notifySound.play();
-          handleNotifyNewOrder(order);
-        });
-      });
-    };
-
-    socket.on("connect", handleConnectAndJoin);
-    if (socket.connected) {
-      handleConnectAndJoin();
-    }
-    // ✅ تنظيف بعد الخروج من الصفحة
-    return () => {
-      socket.off("connect", handleConnectAndJoin);
-      // تنظيف مستمعي الأحداث المخصصة لمنع التكرار (مهم جداً)
-      socket.off("order_updated");
-      socket.off("new_order");
-      disconnectSocket();
-    };
-  }, []);
-
+  // 1. دالة جلب الطلبات الأساسية
   const getOrders = async () => {
     try {
       const data = await getOrdersByCashier(
@@ -97,17 +29,94 @@ function CashierManagment({ cashier, restaurant_id, user_id, token }) {
         toast.error("⚠️ انتهى اشتراك المطعم، يرجى التجديد للاستمرار.");
         return;
       }
-      setOrders(data);
+
+      // ✅ التأكد من ترتيب البيانات المجلوبة عبر HTTP أيضاً
+      const sortedOrders = data.sort((a, b) => b.id - a.id);
+      setOrders(sortedOrders);
     } catch (error) {
-      toast.error("Error fetching orders:", error);
+      toast.error("Error fetching orders:", error.message);
     }
   };
+
+  useEffect(() => {
+    // 1. استدعاء أولي عند التحميل
+    getOrders();
+
+    // 2. 💡 تطبيق الـ Polling كشبكة أمان (FallBack)
+    const intervalId = setInterval(() => {
+      console.log("🔄 Polling Fallback: Resyncing orders...");
+      getOrders();
+    }, 60000); // 60000ms = دقيقة واحدة
+
+    // 3. إعداد Socket.io
+    const socket = connectSocket();
+    socketRef.current = socket;
+
+    // 4. تعريف دوال الـ Listener (منفصلة لسهولة التنظيف)
+    const orderUpdatedListener = ({ order_id, status }) => {
+      setOrders((prev) => {
+        const updated = prev.map((o) =>
+          o.id === order_id ? { ...o, status } : o
+        );
+        return updated.sort((a, b) => b.id - a.id);
+      });
+    };
+
+    const newOrderListener = (order) => {
+      // ✅ رسالة Toast لإعلام المستخدم بالطلب الجديد
+      toast.success(`🔔 طلب جديد! طاولة ${order.table?.name ?? order.id}`);
+
+      setOrders((prev) => {
+        const exists = prev.some((o) => o.id === order.id);
+
+        let updated;
+        if (exists) {
+          updated = prev.map((o) => (o.id === order.id ? order : o));
+        } else {
+          // إضافة الطلب الجديد
+          updated = [...prev, order];
+        }
+
+        // ترتيب الطلبات من الأكبر إلى الأصغر
+        return updated.sort((a, b) => b.id - a.id);
+      });
+    };
+
+    const setupListeners = () => {
+      joinCashier(restaurant_id, () => {
+        // ✅ ربط المستمعين المخصصين
+        onOrderUpdated(orderUpdatedListener);
+        onNewOrder(newOrderListener);
+      });
+    };
+
+    // ربط عند الاتصال لأول مرة أو إعادة الاتصال
+    socket.on("connect", setupListeners);
+    if (socket.connected) {
+      setupListeners();
+    }
+
+    // 5. ✅ تنظيف مُحسن لمنع تكرار المستمعين والـ Interval
+    return () => {
+      // تنظيف الـ Socket Listeners
+      socket.off("connect", setupListeners);
+      // تنظيف المستمعين المخصصين (باستخدام المراجع)
+      socket.off("order_updated", orderUpdatedListener);
+      socket.off("new_order", newOrderListener);
+
+      // تنظيف الـ Polling
+      clearInterval(intervalId);
+
+      disconnectSocket();
+    };
+  }, []); // [] لضمان التنفيذ مرة واحدة فقط
 
   const updateStatus = async (orderId, status) => {
     try {
       const state = { status: status };
-      // ✅ API Request لتحديث الطلب
-      const stateOrder = updateOrderByCashier(
+
+      // API Request لتحديث الطلب (الـ Backend هو من سيرسل الـ Socket)
+      const stateOrder = await updateOrderByCashier(
         orderId,
         cashier,
         restaurant_id,
@@ -122,169 +131,173 @@ function CashierManagment({ cashier, restaurant_id, user_id, token }) {
           order.id === orderId ? { ...order, status } : order
         )
       );
-
-      // ✅ إرسال للسيرفر عبر socket (real-time)
-      // socket.emit("updateOrderStatus", { orderId, status });
     } catch (error) {
       console.error("Error updating order status:", error);
-    }
-  };
-
-  // === Notification helpers ===
-  const enableSound = async () => {
-    // تفاعل مستخدم مطلوب لتفادي قيود autoplay
-    try {
-      // لمثال: نشغل ملف صغير واحد مرة كـ "gesture"
-      await audioRef.current?.play();
-      audioRef.current?.pause();
-      audioRef.current.currentTime = 0;
-    } catch (e) {
-      console.warn("Couldn't play audio on gesture", e);
-    }
-    setSoundEnabled(true);
-  };
-
-  const handleNotifyNewOrder = (order) => {
-    // 1) تشغيل ملف صوتي قصير (beep/ding)
-    if (soundEnabled) {
-      try {
-        audioRef.current.currentTime = 0;
-        audioRef.current.play().catch((err) => {
-          console.warn("Audio play blocked:", err);
-        });
-      } catch (e) {
-        console.warn(e);
-      }
-    }
-
-    if (typeof window !== "undefined" && "Notification" in window) {
-      Notification.requestPermission().then((permission) => {
-        if (permission === "granted") {
-          console.log("✅ Notification permission granted");
-        } else {
-          console.log("❌ Notification permission denied");
-        }
-      });
-    }
-
-    // 2) استخدام Web Speech API للنطق (fallback أو إضافي)
-    if ("speechSynthesis" in window) {
-      const text = `   New Order Number ${order.id}`;
-      const utt = new SpeechSynthesisUtterance(text);
-      // لو عايز صوت عربي:
-      utt.lang = "ar-EG"; // Egyptian Arabic suggestion
-      // ضبط سرعة/نبرة لو حبيت:
-      utt.rate = 0.8;
-      utt.pitch = 0.8;
-      // نطق
-      window.speechSynthesis.cancel(); // إلغاء أي نطق سابق
-      window.speechSynthesis.speak(utt);
+      toast.error("فشل تحديث الحالة.");
     }
   };
 
   return (
-    <main className="min-h-screen text-white p-6">
-      <h1 className="text-3xl font-bold mb-6 text-center">لوحة تحكم كاشير</h1>
-
-      {/* زر لتفعيل الصوت (مطلوب لتمرير سياسات المتصفح) */}
-      {!soundEnabled && (
-        <div className="mb-4 text-center">
-          <button
-            onClick={enableSound}
-            className="bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded"
-          >
-            تفعيل إشعارات الصوت 🔔
-          </button>
-          <p className="text-sm text-gray-300 mt-2">
-            إضغط مرة واحدة فقط لتفعيل الصوت
-          </p>
-        </div>
-      )}
-
-      {/* عنصر صوت - ضع ملفك هنا أو استخدم base64 أو رابط */}
-      <audio
-        ref={audioRef}
-        preload="auto"
-        // استبدل المسار بصوتك: short ding/wav/mp3
-        src="/sounds/ding.mp3"
-      />
+    <main className="min-h-screen bg-gray-900 text-white p-6">
+      <h1 className="text-3xl font-bold mb-6 text-center text-yellow-400">
+        لوحة تحكم الكاشير
+      </h1>
+      <InstallPrompt />
+      <p className="text-center text-sm text-gray-400 mb-6">
+        حالة الاتصال:{" "}
+        {socketRef.current?.connected ? (
+          <span className="text-green-400">✅ متصل (فوري)</span>
+        ) : (
+          <span className="text-red-400">
+            ❌ غير متصل (يعتمد على المزامنة كل 60 ثانية)
+          </span>
+        )}
+      </p>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {orders?.map((order) => (
           <div
             key={order.id}
-            className="bg-gray-900 rounded-xl shadow-md p-4 border border-gray-700 hover:shadow-yellow-400/20 transition-all duration-300"
+            className={`rounded-xl shadow-lg p-4 border transition-all duration-300 ${
+              order.status === "ready"
+                ? "bg-green-900/50 border-green-600 ring-2 ring-green-500"
+                : order.status === "delivered"
+                ? "bg-blue-900/50 border-blue-600"
+                : "bg-gray-800 border-gray-700"
+            }`}
           >
             <div className="flex justify-between items-center mb-3">
-              <h2 className="text-lg font-bold">طلب #{order.id}</h2>
+              <h2 className="text-xl font-extrabold text-yellow-300">
+                طلب #{order.id}
+              </h2>
               <span
-                className={`text-xs font-semibold px-2 py-1 rounded ${
+                className={`text-xs font-semibold px-3 py-1 rounded-full ${
                   order.status === "pending"
                     ? "bg-red-500"
                     : order.status === "in_progress"
                     ? "bg-yellow-500"
-                    : "bg-green-500"
+                    : order.status === "ready"
+                    ? "bg-green-500"
+                    : order.status === "delivered"
+                    ? "bg-blue-500"
+                    : "bg-gray-500"
                 }`}
               >
                 {order.status === "pending"
                   ? "قيد الانتظار"
                   : order.status === "in_progress"
                   ? "جاري التحضير"
-                  : "جاهز"}
+                  : order.status === "ready"
+                  ? "جاهز للدفع"
+                  : order.status === "delivered"
+                  ? "تم التسليم"
+                  : "مدفوع"}
               </span>
             </div>
 
-            <div className="mb-2 text-sm text-gray-300">
+            <div className="mb-4 text-sm text-gray-300 border-b border-gray-700 pb-2">
               <p>
                 <strong>الطاولة:</strong> {order.table?.name ?? "بدون طاولة"}
               </p>
-              <p>
+              <p className="text-lg font-bold text-white">
                 <strong>الإجمالي:</strong> {order.total_price} ج.م
               </p>
             </div>
 
-            <div className="mb-4">
-              <p className="text-sm font-semibold text-gray-400 mb-1">
-                المحتويات:
+            <div className="mb-4 max-h-48 overflow-y-auto custom-scrollbar">
+              <p className="text-sm font-semibold text-yellow-400 mb-2">
+                قائمة الأصناف:
               </p>
-              <ul className="space-y-2">
-                {order?.order_items.map((item, i) => (
-                  <li key={i} className="bg-gray-800 p-2 rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <img
-                        src={item.item?.image ?? "/placeholder.png"}
-                        alt={item.item?.name}
-                        className="w-20 h-20 object-cover rounded"
-                      />
-                      <div>
-                        <p className="font-medium text-xl">{item.item?.name}</p>
-                        <p className="text-xl text-gray-200">
-                          {item.options?.length > 0 &&
-                            item.options.map((opt) => opt.name).join("، ")}
+              <ul className="space-y-3">
+                {order?.order_items?.map((item, i) => (
+                  <li
+                    key={i}
+                    className="bg-gray-700 p-3 rounded-lg flex gap-3 items-start"
+                  >
+                    {/* استخدام Placeholder Image إذا لم تتوفر صورة */}
+                    <img
+                      src={
+                        item.item?.image ||
+                        `https://placehold.co/80x80/2d3748/ffffff?text=${item.item?.name?.substring(
+                          0,
+                          1
+                        )}`
+                      }
+                      alt={item.item?.name}
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = `https://placehold.co/80x80/2d3748/ffffff?text=${item.item?.name?.substring(
+                          0,
+                          1
+                        )}`;
+                      }}
+                      className="w-16 h-16 object-cover rounded-md flex-shrink-0"
+                    />
+                    <div className="flex-grow">
+                      <p className="font-medium text-lg text-white">
+                        {item.item?.name} (x{item.quantity})
+                      </p>
+                      {item.options?.length > 0 && (
+                        <p className="text-xs text-yellow-400 mt-0.5">
+                          الخيارات:{" "}
+                          {item.options.map((opt) => opt.name).join("، ")}
                         </p>
-                        <p className="text-xl">الكمية: {item.quantity}</p>
-
-                        <p className="text-xl">تعليق: {item.comment}</p>
-                      </div>
+                      )}
+                      {item.comment && (
+                        <p className="text-xs text-red-300 mt-1 italic">
+                          ملاحظة: {item.comment}
+                        </p>
+                      )}
                     </div>
                   </li>
                 ))}
               </ul>
             </div>
 
-            <div className="flex gap-2">
+            <div className="flex gap-2 pt-2 border-t border-gray-700">
+              {/* زر تم الدفع (للحالة Ready فقط) */}
               {order.status === "ready" && (
                 <button
                   onClick={() => updateStatus(order.id, "payid")}
-                  className="flex-1 bg-yellow-500 hover:bg-yellow-600 text-black px-3 py-2 rounded text-sm font-semibold"
+                  className="flex-1 bg-yellow-500 hover:bg-yellow-600 text-black px-3 py-2 rounded-lg text-sm font-semibold transition-transform duration-150 transform hover:scale-[1.02] shadow-md hover:shadow-yellow-400/50"
                 >
                   تم الدفع
+                </button>
+              )}
+              {/* زر الإلغاء (يمكن إضافته إذا كان مسموحًا) */}
+              {order.status !== "payid" && (
+                <button
+                  onClick={() => updateStatus(order.id, "cancelled")}
+                  className="bg-red-700 hover:bg-red-800 text-white px-3 py-2 rounded-lg text-sm font-semibold transition-colors"
+                >
+                  إلغاء
                 </button>
               )}
             </div>
           </div>
         ))}
+        {/* ✅ هذا الجزء يظهر عندما تكون المصفوفة فارغة */}
+        {orders.length === 0 && (
+          <div className="md:col-span-3 text-center text-gray-500 py-12">
+            <p className="text-2xl">لا توجد طلبات حالياً.</p>
+            <p className="text-sm">سيتم تحديث الشاشة تلقائياً.</p>
+          </div>
+        )}
       </div>
+
+      <style jsx global>{`
+        /* Custom scrollbar for better mobile appearance */
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background-color: #fca311;
+          border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background-color: #374151;
+        }
+      `}</style>
     </main>
   );
 }

@@ -23,7 +23,7 @@ export const Footer = () => {
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 bg-hero-gradient rounded-lg flex items-center justify-center"></div>
               <Link href={"/"} className="flex items-center gap-3">
-                <div className=" font-bold animate-gradient bg-gradient-to-r from-emerald-400 via-red-500 to-blue-900 bg-clip-text text-transparent bg-[length:200%_200%] text-4xl">
+                <div className=" font-bold animate-gradient bg-gradient-to-r from-gray-400  to-gray-900 bg-clip-text text-transparent bg-[length:200%_200%] text-4xl">
                   QR EGY
                 </div>
               </Link>

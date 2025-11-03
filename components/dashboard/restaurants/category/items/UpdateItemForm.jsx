@@ -68,6 +68,8 @@ function UpdateItemForm({ onSuccess, onCancel, item }) {
     }
 
     const formDataObj = new FormData();
+
+    formDataObj.append("_method", "PUT");
     Object.entries(formData).forEach(([key, value]) => {
       if (value !== null && value !== undefined) {
         formDataObj.append(key, value);
