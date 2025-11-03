@@ -45,7 +45,7 @@ export default function OrdersShow({ restaurant_id, user_id, token }) {
       }
     };
 
-    const interval = setInterval(refreshOrders, 60000); // كل دقيقة
+    const interval = setInterval(refreshOrders, 600000); // كل دقيقة
     return () => clearInterval(interval);
   }, [orders, restaurant_id, user_id, token, setStatus, clearOrderLocal]);
 
