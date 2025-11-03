@@ -35,7 +35,7 @@ export default function OrdersShow({ restaurant_id, user_id, token }) {
               token
             );
             setStatus(order.id, order.status);
-            if (order.status === "paid") {
+            if (order.status === "payid") {
               clearOrderLocal(order.id);
             }
           }
