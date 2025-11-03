@@ -82,7 +82,7 @@ export default function AddToOrderButton({
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="font-cairo bg-blue-900">
+      <DialogContent className="font-cairo bg-black">
         <DialogHeader>
           <DialogTitle className="text-lg font-semibold text-gray-50">
             {lang === "ar" ? "اختيار الإضافات" : "Choose options"}

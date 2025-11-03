@@ -23,6 +23,31 @@ export default function OrdersShow({ restaurant_id, user_id, token }) {
   const isArabic = lang === "ar";
 
   // ✅ عند تشغيل الصفحة، نربط كل الأوردرات الحالية بالسوكت
+  useEffect(() => {
+    const refreshOrders = async () => {
+      try {
+        if (orders.length > 0) {
+          for (const ord of orders) {
+            const order = await getOrderByUser(
+              ord.id,
+              restaurant_id,
+              user_id,
+              token
+            );
+            setStatus(order.id, order.status);
+            if (order.status === "paid") {
+              clearOrderLocal(order.id);
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error refreshing orders:", error);
+      }
+    };
+
+    const interval = setInterval(refreshOrders, 60000); // كل دقيقة
+    return () => clearInterval(interval);
+  }, [orders, restaurant_id, user_id, token, setStatus, clearOrderLocal]);
 
   useEffect(() => {
     const socket = connectSocket();
@@ -90,6 +115,7 @@ export default function OrdersShow({ restaurant_id, user_id, token }) {
               key={item.id}
               className="flex flex-col sm:flex-row justify-between items-center mb-3 border-b border-gray-200 pb-2"
             >
+              <img className="w-20 h-20" src={item.image} alt={item.name} />
               <div>
                 <p className="text-white">
                   {isArabic ? item.name : item.name_en} × {item.quantity}
@@ -141,7 +167,7 @@ export default function OrdersShow({ restaurant_id, user_id, token }) {
             {isArabic ? "الطلبات السابقة" : "Sent Orders"}
           </h2>
 
-          {orders.map((order) => (
+          {orders?.map((order) => (
             <div
               key={order.id}
               className="bg-white/10 rounded-lg p-4 mb-6 border border-white/20"
@@ -151,10 +177,12 @@ export default function OrdersShow({ restaurant_id, user_id, token }) {
                 <span
                   className={`text-xs font-semibold px-2 py-1 rounded ${
                     order.status === "pending"
-                      ? "bg-red-500"
+                      ? "bg-blue-500"
                       : order.status === "in_progress"
                       ? "bg-yellow-500"
-                      : "bg-green-500"
+                      : order.status === "ready"
+                      ? "bg-green-500"
+                      : "bg-red-500"
                   }`}
                 >
                   {isArabic
@@ -166,16 +194,19 @@ export default function OrdersShow({ restaurant_id, user_id, token }) {
                       ? "جاهز"
                       : order.status === "delivered"
                       ? "تم التوصيل"
+                      : order.status === "cancelled"
+                      ? "تم الإلغاء"
                       : "غير معروف"
                     : order.status.replace("_", " ")}
                 </span>
               </h3>
 
-              {order.items.map((item) => (
+              {order.items?.map((item) => (
                 <div
                   key={item.id}
                   className="flex justify-between items-center border-b border-gray-700 pb-1 mb-1"
                 >
+                  <img className="w-20 h-20" src={item.image} alt={item.name} />
                   <p className="text-white">
                     {isArabic ? item.name : item.name_en} × {item.quantity}
                   </p>

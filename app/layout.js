@@ -40,16 +40,15 @@ export const metadata = {
     title: "QR EGY | نظام القوائم الذكية للمطاعم",
     // startUpImage: [],
   },
+  icons: {
+    icon: "/qregylogo.png", // الأيقونات العادية (للويب والمانيفيست)
+    apple: "/qregylogo.png", // 💡 الأيقونة الخاصة بـ iOS
+  },
 };
 
 export default function RootLayout({ children }) {
   return (
     <html dir="rtl">
-      <head>
-        <title>{metadata.title}</title>
-        <meta name="description" content={metadata.description} />
-        <meta name="keywords" content={metadata.keywords.join(", ")} />
-      </head>
       <body className={`${poppins.variable} ${tajawal.variable} antialiased`}>
         <Providers>{children}</Providers>
       </body>

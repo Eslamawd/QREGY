@@ -46,7 +46,7 @@ function CashierManagment({ cashier, restaurant_id, user_id, token }) {
     const intervalId = setInterval(() => {
       console.log("🔄 Polling Fallback: Resyncing orders...");
       getOrders();
-    }, 60000); // 60000ms = دقيقة واحدة
+    }, 600000); // 60000ms = دقيقة واحدة
 
     // 3. إعداد Socket.io
     const socket = connectSocket();
@@ -163,6 +163,8 @@ function CashierManagment({ cashier, restaurant_id, user_id, token }) {
                 ? "bg-green-900/50 border-green-600 ring-2 ring-green-500"
                 : order.status === "delivered"
                 ? "bg-blue-900/50 border-blue-600"
+                : order.status === "cancelled"
+                ? "bg-red-800 border-red-700"
                 : "bg-gray-800 border-gray-700"
             }`}
           >
@@ -172,7 +174,7 @@ function CashierManagment({ cashier, restaurant_id, user_id, token }) {
               </h2>
               <span
                 className={`text-xs font-semibold px-3 py-1 rounded-full ${
-                  order.status === "pending"
+                  order.status === "pending" || order.status === "cancelled"
                     ? "bg-red-500"
                     : order.status === "in_progress"
                     ? "bg-yellow-500"
@@ -191,6 +193,8 @@ function CashierManagment({ cashier, restaurant_id, user_id, token }) {
                   ? "جاهز للدفع"
                   : order.status === "delivered"
                   ? "تم التسليم"
+                  : order.status === "cancelled"
+                  ? "تم الإلغاء"
                   : "مدفوع"}
               </span>
             </div>
@@ -265,7 +269,7 @@ function CashierManagment({ cashier, restaurant_id, user_id, token }) {
                 </button>
               )}
               {/* زر الإلغاء (يمكن إضافته إذا كان مسموحًا) */}
-              {order.status !== "payid" && (
+              {order.status !== "payid" && order.status !== "cancelled" && (
                 <button
                   onClick={() => updateStatus(order.id, "cancelled")}
                   className="bg-red-700 hover:bg-red-800 text-white px-3 py-2 rounded-lg text-sm font-semibold transition-colors"
