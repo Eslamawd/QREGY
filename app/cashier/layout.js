@@ -14,6 +14,10 @@ export const metadata = {
     title: "QR EGY | نظام القوائم الذكية للمطاعم",
     // startUpImage: [],
   },
+  icons: {
+    icon: "/qregylogo_192x192.png", // الأيقونات العادية (للويب والمانيفيست)
+    apple: "/qregylogo_192x192.png", // 💡 الأيقونة الخاصة بـ iOS
+  },
 };
 
 export default function CashierLayout({ children }) {
