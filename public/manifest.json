@@ -1,7 +1,7 @@
 {
   "name": "QREGY Menu",
   "short_name": "QREGY",
-  "start_url": "/menu",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#ffcc00",
