@@ -1,4 +1,4 @@
-// app/kitchen/[id]/layout.js
+// app/kitchen/layout.js
 
 // تحديد الميتا داتا اللازمة لـ PWA وإعدادات العرض
 export const metadata = {

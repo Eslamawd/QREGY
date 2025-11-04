@@ -18,5 +18,5 @@ export const metadata = {
 
 export default function KitchenLayout({ children }) {
   // 💡 2. لا حاجة لتعديل الـ JSX
-  return <main className="md:col-span-4">{children}</main>;
+  return <div className="min-h-screen bg-gray-900">{children}</div>;
 }

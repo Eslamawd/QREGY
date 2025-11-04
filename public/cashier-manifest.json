@@ -2,7 +2,7 @@
   "name": "Cashier",
   "short_name": "Cashier",
   "start_url": "/cashier",
-  "scope": "/cashier",
+  "scope": "/cashier/",
   "display": "standalone",
   "background_color": "#1f2937",
   "theme_color": "#facc15",
