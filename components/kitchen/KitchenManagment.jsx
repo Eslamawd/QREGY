@@ -128,7 +128,7 @@ function KitchenManagment({ kitchen, restaurant_id, user_id, token }) {
     if (Notification.permission === "granted") {
       new Notification("🍔 طلب جديد", {
         body: `رقم الطلب: ${order.id}`,
-        icon: "/qregylogo.jpg",
+        icon: "/qregylogo_192x192.png",
       });
     }
 

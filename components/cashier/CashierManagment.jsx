@@ -11,22 +11,18 @@ import { toast } from "sonner";
 
 function CashierManagment({ cashier, restaurant_id, user_id, token }) {
   const [orders, setOrders] = useState([]);
-
   const [soundEnabled, setSoundEnabled] = useState(false);
-  // ✅ استخدام useRef لتخزين مثيل Socket.io (لتحسين الـ Cleanup)
   const socketRef = useRef(null);
   const audioRef = useRef(null);
-  // ✅ طلب إذن الإشعارات مرة واحدة فقط
+
   useEffect(() => {
     if ("Notification" in window) {
       Notification.requestPermission();
     }
   }, []);
 
-  // 💡 1. دالة تفعيل الصوت (منطق المطبخ)
   const enableSound = async () => {
     try {
-      // محاولة تشغيل وكتم الصوت لتخطي قيود المتصفح
       audioRef.current.muted = true;
       await audioRef.current.play();
       audioRef.current.pause();
@@ -38,12 +34,59 @@ function CashierManagment({ cashier, restaurant_id, user_id, token }) {
     }
   };
 
-  // 💡 2. دالة الإشعارات والصوت والنطق (منطق المطبخ)
-  const handleNotify = (order, title, message) => {
-    // 1. تشغيل الصوت (مع منطق المحاولة الثانية)
-    if (soundEnabled && audioRef.current) {
-      audioRef.current.currentTime = 0;
+  const getOrders = async () => {
+    try {
+      const data = await getOrdersByCashier(
+        cashier,
+        restaurant_id,
+        user_id,
+        token
+      );
 
+      if (data?.active === false) {
+        toast.error("⚠️ انتهى اشتراك المطعم، يرجى التجديد للاستمرار.");
+        return;
+      }
+
+      const sorted = data.sort(
+        (a, b) =>
+          new Date(b.created_at ?? 0).getTime() -
+          new Date(a.created_at ?? 0).getTime()
+      );
+      setOrders(sorted);
+    } catch (error) {
+      console.error("Error fetching orders:", error);
+      toast.error("حدث خطأ أثناء تحميل الطلبات.");
+    }
+  };
+
+  const updateStatus = async (orderId, status) => {
+    try {
+      await updateOrderByCashier(
+        orderId,
+        cashier,
+        restaurant_id,
+        user_id,
+        token,
+        { status }
+      );
+
+      setOrders((prev) => {
+        const updated = prev.map((order) =>
+          order.id === orderId ? { ...order, status } : order
+        );
+        return status === "paid"
+          ? updated.filter((order) => order.id !== orderId)
+          : updated;
+      });
+    } catch (error) {
+      console.error("Error updating order status:", error);
+      toast.error("فشل تحديث حالة الطلب.");
+    }
+  };
+
+  const handleNotifyNewOrder = (order) => {
+    if (soundEnabled && audioRef.current) {
       const tryPlaySound = (attempt = 1) => {
         audioRef.current
           .play()
@@ -52,9 +95,7 @@ function CashierManagment({ cashier, restaurant_id, user_id, token }) {
           })
           .catch((err) => {
             console.warn(`🔇 فشل تشغيل الصوت في المحاولة رقم ${attempt}:`, err);
-
             if (attempt === 1) {
-              console.log("🔄 محاولة ثانية لتشغيل الصوت بعد 500ms...");
               setTimeout(() => {
                 tryPlaySound(2);
               }, 500);
@@ -64,22 +105,20 @@ function CashierManagment({ cashier, restaurant_id, user_id, token }) {
       tryPlaySound(1);
     }
 
-    // 2. الإشعار التقليدي
     if (Notification.permission === "granted") {
-      new Notification("💰 طلب جديد يجب دفعه", {
-        body: `رقم الطلب: ${order.id}. الطاولة: ${
-          order.table?.name ?? "بدون طاولة"
-        }`,
-        icon: "/qregylogo.jpg",
+      new Notification("💵 طلب جديد للكاشير", {
+        body: `رقم الطلب: ${order.id}`,
+        icon: "/qregylogo_192x192.png",
       });
     }
 
-    // 3. النطق الصوتي (Speech Synthesis)
     if ("speechSynthesis" in window) {
-      const utt = new SpeechSynthesisUtterance(message);
+      const utt = new SpeechSynthesisUtterance(
+        `طلب جديد رقم ${order.id} يحتاج للدفع`
+      );
       utt.lang = "ar-SA";
       utt.rate = 0.9;
-      // ... (اختيار الصوت العربي) ...
+      utt.pitch = 1;
       const voice = speechSynthesis
         .getVoices()
         .find((v) => v.lang.startsWith("ar"));
@@ -89,135 +128,63 @@ function CashierManagment({ cashier, restaurant_id, user_id, token }) {
     }
   };
 
-  // 3. دالة جلب الطلبات الأساسية
-  const getOrders = async () => {
-    try {
-      const data = await getOrdersByCashier(
-        cashier,
-        restaurant_id,
-        user_id,
-        token
-      );
-      if (data?.active === false) {
-        toast.error("⚠️ انتهى اشتراك المطعم، يرجرو التجديد للاستمرار.");
-        return;
-      }
-      const sortedOrders = data.sort((a, b) => b.id - a.id);
-      setOrders(sortedOrders);
-    } catch (error) {
-      toast.error("Error fetching orders:", error.message);
-    }
-  };
-
   useEffect(() => {
     getOrders();
 
-    // 💡 تطبيق الـ Polling كشبكة أمان
-    const intervalId = setInterval(() => {
-      console.log("🔄 Polling Fallback: Resyncing orders...");
-      getOrders();
-    }, 600000);
-
-    // 3. إعداد Socket.io
     const socket = connectSocket();
     socketRef.current = socket;
 
-    // 4. تعريف دوال الـ Listener
-    const orderUpdatedListener = ({ order_id, status }) => {
-      setOrders((prev) => {
-        // ... (منطق تحديث الحالة) ...
-        const updated = prev.map((o) =>
-          o.id === order_id ? { ...o, status } : o
-        );
+    const handleConnect = () => {
+      console.log("✅ Socket connected. Joining cashier...");
+      joinCashier(restaurant_id, (response) => {
+        console.log("✅ Joined room:", response.room);
 
-        // 💡 تنبيه الكاشير عندما يصبح الطلب "جاهز" (ready)
-        if (status === "ready") {
-          const readyOrder = updated.find((o) => o.id === order_id);
-          if (readyOrder)
-            handleNotify(
-              readyOrder,
-              "💰 طلب جاهز للدفع",
-              `طلب جاهز للدفع رقم ${readyOrder.id}`
+        socket.off("newOrder");
+        socket.off("orderUpdated");
+
+        onOrderUpdated(({ order_id, status }) => {
+          setOrders((prev) => {
+            const updated = prev.map((o) =>
+              o.id === order_id ? { ...o, status } : o
             );
-        }
+            return updated.sort((a, b) => b.id - a.id);
+          });
 
-        return updated.sort((a, b) => b.id - a.id);
+          handleNotifyNewOrder({ id: order_id });
+        });
+
+        onNewOrder((order) => {
+          toast.success(`🔔 طلب جديد! طاولة ${order.table?.name ?? order.id}`);
+          setOrders((prev) => {
+            const exists = prev.some((o) => o.id === order.id);
+            const updated = exists
+              ? prev.map((o) => (o.id === order.id ? order : o))
+              : [...prev, order];
+            return updated.sort((a, b) => b.id - a.id);
+          });
+          handleNotifyNewOrder(order);
+        });
       });
     };
 
-    const newOrderListener = (order) => {
-      // ✅ رسالة Toast لإعلام المستخدم بالطلب الجديد
-      toast.success(`🔔 طلب جديد! طاولة ${order.table?.name ?? order.id}`);
-      // 💡 هنا، الطلب الجديد (pending) قد لا يتطلب إشعاراً قوياً مثل الطلب الجاهز للدفع.
-      // إذا كنت تريد إشعاراً قوياً للطلب الجديد: handleNotifyNewOrder(order);
+    socket.on("connect", handleConnect);
 
-      setOrders((prev) => {
-        const exists = prev.some((o) => o.id === order.id);
-        let updated = exists
-          ? prev.map((o) => (o.id === order.id ? order : o))
-          : [...prev, order];
+    const intervalId = setInterval(() => {
+      if (!socket.connected) {
+        console.log("🔄 Socket disconnected. Polling orders...");
+        getOrders();
+      }
+    }, 600000);
 
-        return updated.sort((a, b) => b.id - a.id);
-      });
-      handleNotify(
-        order,
-        "🆕 طلب جديد في الانتظار",
-        `طلب جديد رقم ${order.id}`
-      );
-    };
-
-    const setupListeners = () => {
-      joinCashier(restaurant_id, () => {
-        onOrderUpdated(orderUpdatedListener);
-        onNewOrder(newOrderListener);
-      });
-    };
-
-    socket.on("connect", setupListeners);
-    if (socket.connected) {
-      setupListeners();
-    }
-
-    // 5. تنظيف
     return () => {
-      socket.off("connect", setupListeners);
-      socket.off("order_updated", orderUpdatedListener);
-      socket.off("new_order", newOrderListener);
       clearInterval(intervalId);
+      socket.off("connect", handleConnect);
+      socket.off("newOrder");
+      socket.off("orderUpdated");
       disconnectSocket();
     };
-  }, [restaurant_id]); // أضفنا restaurant_id لضمان إعادة تشغيل الـ Effect إذا تغيرت بيانات المطعم
+  }, []);
 
-  const updateStatus = async (orderId, status) => {
-    // ... (منطق تحديث الحالة) ...
-    try {
-      const state = { status: status };
-
-      await updateOrderByCashier(
-        orderId,
-        cashier,
-        restaurant_id,
-        user_id,
-        token,
-        state
-      );
-
-      // ✅ تعديل محلي (Optimistic UI)
-      setOrders((prev) =>
-        prev.map((order) =>
-          order.id === orderId ? { ...order, status } : order
-        )
-      );
-
-      // 💡 إزالة الطلب من القائمة إذا تم الدفع (للتنظيف)
-      if (status === "payid") {
-        setOrders((prev) => prev.filter((order) => order.id !== orderId));
-      }
-    } catch (error) {
-      console.error("Error updating order status:", error);
-      toast.error("فشل تحديث الحالة.");
-    }
-  };
   return (
     <main className="min-h-screen bg-gray-900 text-white p-6">
       <h1 className="text-3xl font-bold mb-6 text-center text-yellow-400">
