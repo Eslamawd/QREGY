@@ -1,0 +1,22 @@
+{
+  "name": "QREGY Cashier",
+  "short_name": "Kitchen",
+  "start_url": "/cashier",
+  "scope": "/cashier",
+  "display": "standalone",
+  "background_color": "#1f2937",
+  "theme_color": "#facc15",
+  "description": "cashier Management Dashboard",
+  "icons": [
+    {
+      "src": "/qregylogo_192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/qregylogo_512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

@@ -8,14 +8,86 @@ import {
   onOrderUpdated,
 } from "@/services/socket"; // ✅ تم تصحيح المسار
 import { toast } from "sonner";
-import InstallPrompt from "../InstallPrompt";
 
 function CashierManagment({ cashier, restaurant_id, user_id, token }) {
   const [orders, setOrders] = useState([]);
   // ✅ استخدام useRef لتخزين مثيل Socket.io (لتحسين الـ Cleanup)
   const socketRef = useRef(null);
+  const audioRef = useRef(null);
+  // ✅ طلب إذن الإشعارات مرة واحدة فقط
+  useEffect(() => {
+    if ("Notification" in window) {
+      Notification.requestPermission();
+    }
+  }, []);
 
-  // 1. دالة جلب الطلبات الأساسية
+  // 💡 1. دالة تفعيل الصوت (منطق المطبخ)
+  const enableSound = async () => {
+    try {
+      // محاولة تشغيل وكتم الصوت لتخطي قيود المتصفح
+      audioRef.current.muted = true;
+      await audioRef.current.play();
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      audioRef.current.muted = false;
+      setSoundEnabled(true);
+    } catch (err) {
+      console.warn("🔇 لا يمكن تشغيل الصوت تلقائيًا:", err);
+    }
+  };
+
+  // 💡 2. دالة الإشعارات والصوت والنطق (منطق المطبخ)
+  const handleNotify = (order, title, message) => {
+    // 1. تشغيل الصوت (مع منطق المحاولة الثانية)
+    if (soundEnabled && audioRef.current) {
+      audioRef.current.currentTime = 0;
+
+      const tryPlaySound = (attempt = 1) => {
+        audioRef.current
+          .play()
+          .then(() => {
+            console.log(`🔔 تم تشغيل صوت الإشعار في المحاولة رقم ${attempt}.`);
+          })
+          .catch((err) => {
+            console.warn(`🔇 فشل تشغيل الصوت في المحاولة رقم ${attempt}:`, err);
+
+            if (attempt === 1) {
+              console.log("🔄 محاولة ثانية لتشغيل الصوت بعد 500ms...");
+              setTimeout(() => {
+                tryPlaySound(2);
+              }, 500);
+            }
+          });
+      };
+      tryPlaySound(1);
+    }
+
+    // 2. الإشعار التقليدي
+    if (Notification.permission === "granted") {
+      new Notification("💰 طلب جديد يجب دفعه", {
+        body: `رقم الطلب: ${order.id}. الطاولة: ${
+          order.table?.name ?? "بدون طاولة"
+        }`,
+        icon: "/qregylogo.jpg",
+      });
+    }
+
+    // 3. النطق الصوتي (Speech Synthesis)
+    if ("speechSynthesis" in window) {
+      const utt = new SpeechSynthesisUtterance(message);
+      utt.lang = "ar-SA";
+      utt.rate = 0.9;
+      // ... (اختيار الصوت العربي) ...
+      const voice = speechSynthesis
+        .getVoices()
+        .find((v) => v.lang.startsWith("ar"));
+      if (voice) utt.voice = voice;
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.speak(utt);
+    }
+  };
+
+  // 3. دالة جلب الطلبات الأساسية
   const getOrders = async () => {
     try {
       const data = await getOrdersByCashier(
@@ -24,13 +96,10 @@ function CashierManagment({ cashier, restaurant_id, user_id, token }) {
         user_id,
         token
       );
-
       if (data?.active === false) {
-        toast.error("⚠️ انتهى اشتراك المطعم، يرجى التجديد للاستمرار.");
+        toast.error("⚠️ انتهى اشتراك المطعم، يرجرو التجديد للاستمرار.");
         return;
       }
-
-      // ✅ التأكد من ترتيب البيانات المجلوبة عبر HTTP أيضاً
       const sortedOrders = data.sort((a, b) => b.id - a.id);
       setOrders(sortedOrders);
     } catch (error) {
@@ -39,25 +108,37 @@ function CashierManagment({ cashier, restaurant_id, user_id, token }) {
   };
 
   useEffect(() => {
-    // 1. استدعاء أولي عند التحميل
     getOrders();
 
-    // 2. 💡 تطبيق الـ Polling كشبكة أمان (FallBack)
+    // 💡 تطبيق الـ Polling كشبكة أمان
     const intervalId = setInterval(() => {
       console.log("🔄 Polling Fallback: Resyncing orders...");
       getOrders();
-    }, 600000); // 60000ms = دقيقة واحدة
+    }, 600000);
 
     // 3. إعداد Socket.io
     const socket = connectSocket();
     socketRef.current = socket;
 
-    // 4. تعريف دوال الـ Listener (منفصلة لسهولة التنظيف)
+    // 4. تعريف دوال الـ Listener
     const orderUpdatedListener = ({ order_id, status }) => {
       setOrders((prev) => {
+        // ... (منطق تحديث الحالة) ...
         const updated = prev.map((o) =>
           o.id === order_id ? { ...o, status } : o
         );
+
+        // 💡 تنبيه الكاشير عندما يصبح الطلب "جاهز" (ready)
+        if (status === "ready") {
+          const readyOrder = updated.find((o) => o.id === order_id);
+          if (readyOrder)
+            handleNotify(
+              readyOrder,
+              "💰 طلب جاهز للدفع",
+              `طلب جاهز للدفع رقم ${readyOrder.id}`
+            );
+        }
+
         return updated.sort((a, b) => b.id - a.id);
       });
     };
@@ -65,58 +146,52 @@ function CashierManagment({ cashier, restaurant_id, user_id, token }) {
     const newOrderListener = (order) => {
       // ✅ رسالة Toast لإعلام المستخدم بالطلب الجديد
       toast.success(`🔔 طلب جديد! طاولة ${order.table?.name ?? order.id}`);
+      // 💡 هنا، الطلب الجديد (pending) قد لا يتطلب إشعاراً قوياً مثل الطلب الجاهز للدفع.
+      // إذا كنت تريد إشعاراً قوياً للطلب الجديد: handleNotifyNewOrder(order);
 
       setOrders((prev) => {
         const exists = prev.some((o) => o.id === order.id);
+        let updated = exists
+          ? prev.map((o) => (o.id === order.id ? order : o))
+          : [...prev, order];
 
-        let updated;
-        if (exists) {
-          updated = prev.map((o) => (o.id === order.id ? order : o));
-        } else {
-          // إضافة الطلب الجديد
-          updated = [...prev, order];
-        }
-
-        // ترتيب الطلبات من الأكبر إلى الأصغر
         return updated.sort((a, b) => b.id - a.id);
       });
+      handleNotify(
+        order,
+        "🆕 طلب جديد في الانتظار",
+        `طلب جديد رقم ${order.id}`
+      );
     };
 
     const setupListeners = () => {
       joinCashier(restaurant_id, () => {
-        // ✅ ربط المستمعين المخصصين
         onOrderUpdated(orderUpdatedListener);
         onNewOrder(newOrderListener);
       });
     };
 
-    // ربط عند الاتصال لأول مرة أو إعادة الاتصال
     socket.on("connect", setupListeners);
     if (socket.connected) {
       setupListeners();
     }
 
-    // 5. ✅ تنظيف مُحسن لمنع تكرار المستمعين والـ Interval
+    // 5. تنظيف
     return () => {
-      // تنظيف الـ Socket Listeners
       socket.off("connect", setupListeners);
-      // تنظيف المستمعين المخصصين (باستخدام المراجع)
       socket.off("order_updated", orderUpdatedListener);
       socket.off("new_order", newOrderListener);
-
-      // تنظيف الـ Polling
       clearInterval(intervalId);
-
       disconnectSocket();
     };
-  }, []); // [] لضمان التنفيذ مرة واحدة فقط
+  }, [restaurant_id]); // أضفنا restaurant_id لضمان إعادة تشغيل الـ Effect إذا تغيرت بيانات المطعم
 
   const updateStatus = async (orderId, status) => {
+    // ... (منطق تحديث الحالة) ...
     try {
       const state = { status: status };
 
-      // API Request لتحديث الطلب (الـ Backend هو من سيرسل الـ Socket)
-      const stateOrder = await updateOrderByCashier(
+      await updateOrderByCashier(
         orderId,
         cashier,
         restaurant_id,
@@ -131,28 +206,46 @@ function CashierManagment({ cashier, restaurant_id, user_id, token }) {
           order.id === orderId ? { ...order, status } : order
         )
       );
+
+      // 💡 إزالة الطلب من القائمة إذا تم الدفع (للتنظيف)
+      if (status === "payid") {
+        setOrders((prev) => prev.filter((order) => order.id !== orderId));
+      }
     } catch (error) {
       console.error("Error updating order status:", error);
       toast.error("فشل تحديث الحالة.");
     }
   };
-
   return (
     <main className="min-h-screen bg-gray-900 text-white p-6">
       <h1 className="text-3xl font-bold mb-6 text-center text-yellow-400">
         لوحة تحكم الكاشير
       </h1>
-      <InstallPrompt />
       <p className="text-center text-sm text-gray-400 mb-6">
         حالة الاتصال:{" "}
         {socketRef.current?.connected ? (
           <span className="text-green-400">✅ متصل (فوري)</span>
         ) : (
-          <span className="text-red-400">
-            ❌ غير متصل (يعتمد على المزامنة كل 60 ثانية)
-          </span>
+          <span className="text-red-400">❌ غير متصل (يعتمد على المزامنة)</span>
         )}
       </p>
+      {!soundEnabled && (
+        <div className="mb-4 text-center">
+          <button
+            onClick={enableSound}
+            className="bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded-lg shadow-md"
+          >
+            تفعيل إشعارات الصوت 🔔
+          </button>
+          <p className="text-sm text-gray-300 mt-2">
+            اضغط مرة واحدة لتفعيل الصوت والنطق والإشعارات
+          </p>
+        </div>
+      )}
+      <audio ref={audioRef} preload="auto">
+        <source src="/sounds/ding.mp3" type="audio/mpeg" />
+        <source src="/sounds/ding.ogg" type="audio/ogg" />
+      </audio>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {orders?.map((order) => (

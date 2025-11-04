@@ -7,7 +7,6 @@ import {
   onOrderUpdated,
   disconnectSocket,
 } from "@/services/socket";
-import InstallPrompt from "../InstallPrompt";
 import { toast } from "sonner";
 
 function KitchenManagment({ kitchen, restaurant_id, user_id, token }) {
@@ -210,8 +209,6 @@ function KitchenManagment({ kitchen, restaurant_id, user_id, token }) {
       <h1 className="text-3xl font-bold mb-6 text-center">
         🍳 لوحة تحكم المطبخ
       </h1>
-
-      <InstallPrompt />
 
       <p className="text-center text-sm text-gray-400 mb-6">
         حالة الاتصال:{" "}
