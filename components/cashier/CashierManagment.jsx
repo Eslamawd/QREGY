@@ -11,6 +11,8 @@ import { toast } from "sonner";
 
 function CashierManagment({ cashier, restaurant_id, user_id, token }) {
   const [orders, setOrders] = useState([]);
+
+  const [soundEnabled, setSoundEnabled] = useState(false);
   // ✅ استخدام useRef لتخزين مثيل Socket.io (لتحسين الـ Cleanup)
   const socketRef = useRef(null);
   const audioRef = useRef(null);
