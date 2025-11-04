@@ -93,12 +93,39 @@ function KitchenManagment({ kitchen, restaurant_id, user_id, token }) {
   };
 
   // ✅ إشعارات + صوت + نطق
+  // ✅ إشعارات + صوت + نطق (مُحسَّن لـ iOS/Safari)
   const handleNotifyNewOrder = (order) => {
+    // 1. تشغيل الصوت
     if (soundEnabled && audioRef.current) {
       audioRef.current.currentTime = 0;
-      audioRef.current.play().catch((err) => console.warn(err));
+
+      // 🚀 التعديل الهام: استخدام .then().catch() لضمان معالجة فشل التشغيل التلقائي
+      const tryPlaySound = (attempt = 1) => {
+        audioRef.current
+          .play()
+          .then(() => {
+            // التشغيل نجح
+            console.log(`🔔 تم تشغيل صوت الإشعار في المحاولة رقم ${attempt}.`);
+          })
+          .catch((err) => {
+            // ❌ فشل التشغيل
+            console.warn(`🔇 فشل تشغيل الصوت في المحاولة رقم ${attempt}:`, err);
+
+            // **🚨 المحاولة الثانية المؤجلة (Retrial Logic)**
+            if (attempt === 1) {
+              console.log("🔄 محاولة ثانية لتشغيل الصوت بعد 500ms...");
+              setTimeout(() => {
+                tryPlaySound(2); // المحاولة الثانية
+              }, 500);
+            }
+          });
+      };
+
+      // ابدأ بالمحاولة الأولى
+      tryPlaySound(1);
     }
 
+    // 2. الإشعار التقليدي
     if (Notification.permission === "granted") {
       new Notification("🍔 طلب جديد", {
         body: `رقم الطلب: ${order.id}`,
@@ -106,7 +133,7 @@ function KitchenManagment({ kitchen, restaurant_id, user_id, token }) {
       });
     }
 
-    // ✅ نطق صوتي بالعربية (مدعوم على iOS)
+    // 3. النطق الصوتي (Speech Synthesis)
     if ("speechSynthesis" in window) {
       const utt = new SpeechSynthesisUtterance(`طلب جديد رقم ${order.id}`);
       utt.lang = "ar-SA";
@@ -208,8 +235,10 @@ function KitchenManagment({ kitchen, restaurant_id, user_id, token }) {
           </p>
         </div>
       )}
-
-      <audio ref={audioRef} preload="auto" src="/sounds/ding.mp3" />
+      <audio ref={audioRef} preload="auto">
+        <source src="/sounds/ding.mp3" type="audio/mpeg" />
+        <source src="/sounds/ding.ogg" type="audio/ogg" />
+      </audio>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {orders?.map((order) => (
