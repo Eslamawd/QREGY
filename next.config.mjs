@@ -8,8 +8,10 @@ const nextConfig = {
 
 const withPWA = withPWAInit({
   dest: "public",
-  register: true,
-  disable: false,
+  // يجب أن يكون true للإنتاج، و false للتطوير لتجنب مشاكل الكاش
+  disable: process.env.NODE_ENV === "development",
+  register: true, // تسجيل Service Worker تلقائياً
+  skipWaiting: true, // تحديث Service Worker فوراً
 });
 
 export default withPWA(nextConfig);

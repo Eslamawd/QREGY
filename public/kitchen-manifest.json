@@ -1,11 +1,12 @@
 {
-  "name": "QREGY Menu",
-  "short_name": "QREGY",
-  "start_url": "/menu",
+  "name": "QREGY Kitchen",
+  "short_name": "Kitchen",
+  "start_url": "/kitchen",
+  "scope": "/kitchen",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#ffcc00",
-  "description": "Smart Restaurant Menu",
+  "background_color": "#1f2937",
+  "theme_color": "#facc15",
+  "description": "Kitchen Management Dashboard",
   "icons": [
     {
       "src": "/qregylogo_192x192.png",
