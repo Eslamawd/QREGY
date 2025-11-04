@@ -86,36 +86,47 @@ function CashierManagment({ cashier, restaurant_id, user_id, token }) {
   };
 
   const handleNotifyNewOrder = (order) => {
+    // 1. تشغيل الصوت
     if (soundEnabled && audioRef.current) {
+      audioRef.current.currentTime = 0;
+
+      // 🚀 التعديل الهام: استخدام .then().catch() لضمان معالجة فشل التشغيل التلقائي
       const tryPlaySound = (attempt = 1) => {
         audioRef.current
           .play()
           .then(() => {
+            // التشغيل نجح
             console.log(`🔔 تم تشغيل صوت الإشعار في المحاولة رقم ${attempt}.`);
           })
           .catch((err) => {
+            // ❌ فشل التشغيل
             console.warn(`🔇 فشل تشغيل الصوت في المحاولة رقم ${attempt}:`, err);
+
+            // **🚨 المحاولة الثانية المؤجلة (Retrial Logic)**
             if (attempt === 1) {
+              console.log("🔄 محاولة ثانية لتشغيل الصوت بعد 500ms...");
               setTimeout(() => {
-                tryPlaySound(2);
+                tryPlaySound(2); // المحاولة الثانية
               }, 500);
             }
           });
       };
+
+      // ابدأ بالمحاولة الأولى
       tryPlaySound(1);
     }
 
+    // 2. الإشعار التقليدي
     if (Notification.permission === "granted") {
-      new Notification("💵 طلب جديد للكاشير", {
+      new Notification("طلب جديد للكاشير", {
         body: `رقم الطلب: ${order.id}`,
         icon: "/qregylogo_192x192.png",
       });
     }
 
+    // 3. النطق الصوتي (Speech Synthesis)
     if ("speechSynthesis" in window) {
-      const utt = new SpeechSynthesisUtterance(
-        `طلب جديد رقم ${order.id} يحتاج للدفع`
-      );
+      const utt = new SpeechSynthesisUtterance(`طلب جديد رقم ${order.id}`);
       utt.lang = "ar-SA";
       utt.rate = 0.9;
       utt.pitch = 1;
@@ -143,13 +154,9 @@ function CashierManagment({ cashier, restaurant_id, user_id, token }) {
         socket.off("orderUpdated");
 
         onOrderUpdated(({ order_id, status }) => {
-          setOrders((prev) => {
-            const updated = prev.map((o) =>
-              o.id === order_id ? { ...o, status } : o
-            );
-            return updated.sort((a, b) => b.id - a.id);
-          });
-
+          setOrders((prev) =>
+            prev.map((o) => (o.id === order_id ? { ...o, status } : o))
+          );
           handleNotifyNewOrder({ id: order_id });
         });
 
