@@ -1,17 +1,15 @@
-// kitchen/layout.js
+// app/kitchen/[id]/layout.js (تم التعديل)
 
-"use client";
+// ❌ إزالة "use client";
 
-// 💡 1. إضافة Metadata Export
-// سيتم دمج هذا الكائن في <head>
+// 💡 1. إضافة Metadata Export (تبقى هنا لأن هذا الملف الآن Server Component)
 export const metadata = {
-  // هذا يحدد لون شريط الحالة في PWA
+  title: "QREGY Kitchen Dashboard", // يمكنك إضافة عنوان للصفحة
   themeColor: "#facc15",
-  // هذا يحدد ملف البيان
   manifest: "/kitchen-manifest.json",
 };
 
 export default function KitchenLayout({ children }) {
-  // 💡 2. لا حاجة لتعديل الـ JSX هنا، لأنه بالفعل سيتضمن Metadata
+  // 💡 2. لا حاجة لتعديل الـ JSX
   return <main className="md:col-span-4">{children}</main>;
 }
