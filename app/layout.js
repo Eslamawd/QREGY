@@ -15,6 +15,7 @@ const poppins = Poppins({
   weight: ["400", "600", "700"],
 });
 export const metadata = {
+  applicationName: "QREGY",
   title: "QR EGY | نظام القوائم الذكية للمطاعم",
   description:
     "حوّل مطعمك إلى تجربة رقمية حديثة مع QR EGY. نظام قوائم ذكية، طلبات فورية، تقارير تحليلية، وشاشة مطبخ تفاعلية.",
@@ -32,6 +33,17 @@ export const metadata = {
     "منيو إلكتروني",
     "تكنولوجيا مطاعم",
   ],
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "QR EGY | نظام القوائم الذكية للمطاعم",
+    // startUpImage: [],
+  },
+  icons: {
+    icon: "/qregylogo_192x192.png", // الأيقونات العادية (للويب والمانيفيست)
+    apple: "/qregylogo_192x192.png", // 💡 الأيقونة الخاصة بـ iOS
+  },
 };
 
 export default function RootLayout({ children }) {
