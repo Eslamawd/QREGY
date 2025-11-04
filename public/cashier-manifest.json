@@ -1,6 +1,6 @@
 {
   "name": "QREGY Cashier",
-  "short_name": "Kitchen",
+  "short_name": "Cashier",
   "start_url": "/cashier",
   "scope": "/cashier",
   "display": "standalone",
