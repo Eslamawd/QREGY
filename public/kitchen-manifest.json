@@ -5,7 +5,7 @@
   "scope": "/kitchen/",
   "display": "standalone",
   "background_color": "#1f2937",
-  "theme_color": "#facc15",
+  "theme_color": "#000000",
   "description": "Kitchen Management Dashboard",
   "icons": [
     {

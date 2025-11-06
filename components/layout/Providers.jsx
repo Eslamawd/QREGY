@@ -7,6 +7,7 @@ import { Footer } from "./Footer";
 import { LanguageProvider } from "@/context/LanguageContext";
 import { CurrencyProvider } from "@/context/CurrencyContext";
 import { usePathname } from "next/navigation";
+import InstallPrompt from "../InstallPrompt";
 
 export default function Providers({ children }) {
   const pathname = usePathname();
@@ -29,6 +30,7 @@ export default function Providers({ children }) {
           {!shouldHideLayout && <Header />}
 
           {children}
+          <InstallPrompt />
 
           {!shouldHideLayout && <Footer />}
         </CurrencyProvider>
