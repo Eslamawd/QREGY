@@ -151,11 +151,21 @@ export const Footer = () => {
             <div className="space-y-3">
               <div className="flex items-center gap-3">
                 <Mail className="h-4 w-4 text-primary" />
-                <span className="text-muted-foreground">support@qregy.com</span>
+                <a
+                  href="mailto:support@qregy.com"
+                  className="text-lg text-gray-300 hover:text-blue-400 transition duration-200"
+                >
+                  support@qregy.com
+                </a>
               </div>
               <div className="flex items-center gap-3">
                 <Phone className="h-4 w-4 text-primary" />
-                <span className="text-muted-foreground">+20 106 267 9225</span>
+                <a
+                  href="tel:+201062679225"
+                  className="text-blue-400 hover:text-blue-300 transition duration-200"
+                >
+                  +20 106 267 9225
+                </a>
               </div>
               <div className="flex items-center gap-3">
                 <MapPin className="h-4 w-4 text-primary" />
@@ -177,13 +187,13 @@ export const Footer = () => {
           </p>
           <div className="flex items-center gap-6 text-sm">
             <a
-              href="#"
+              href="/terms"
               className="text-muted-foreground hover:text-primary transition-colors"
             >
               {lang === "ar" ? "سياسة الخصوصية" : "Privacy Policy"}
             </a>
             <a
-              href="#"
+              href="/terms"
               className="text-muted-foreground hover:text-primary transition-colors"
             >
               {lang === "ar" ? "شروط الاستخدام" : "Terms of Use"}

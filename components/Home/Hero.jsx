@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { QrCode, ShoppingCart, ChefHat, BarChart3 } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
+import Link from "next/link";
 
 const Hero = () => {
   const { lang } = useLanguage();
@@ -73,19 +74,23 @@ const Hero = () => {
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-end pt-4">
               {/* Primary Button */}
-              <Button
-                size="lg"
-                className="text-lg h-14 px-8 shadow-button hover:shadow-lg transition-all font-cairo font-semibold bg-gradient-to-r from-emerald-400 to-cyan-500 text-white"
-              >
-                <QrCode className="w-16 h-16" />
-                {lang === "ar" ? "ابدأ الآن مجاناً" : "Begin Now for Free"}
-              </Button>
+              <Link href={"/register"}>
+                <Button
+                  size="lg"
+                  className="text-lg h-14 px-8 shadow-button hover:shadow-lg transition-all font-cairo font-semibold bg-gradient-to-r from-emerald-400 to-cyan-500 text-white"
+                >
+                  <QrCode className="w-16 h-16" />
+                  {lang === "ar" ? "ابدأ الآن مجاناً" : "Begin Now for Free"}
+                </Button>
+              </Link>
 
               {/* Secondary Outline Gradient Button */}
               <span className="text-lg h-14 px-8 font-cairo font-semibold flex justify-center text-center rounded-4xl items-center border-2 relative overflow-hidden group">
-                <span className="relative text-emerald-400 group-hover:text-cyan-500 transition">
-                  {lang === "ar" ? "شاهد العرض التوضيحي" : "Watch Demo"}
-                </span>
+                <Link href={"/details"}>
+                  <span className="relative text-emerald-400 group-hover:text-cyan-500 transition">
+                    {lang === "ar" ? "شاهد العرض التوضيحي" : "Watch Demo"}
+                  </span>
+                </Link>
               </span>
             </div>
           </motion.div>
