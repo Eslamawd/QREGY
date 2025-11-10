@@ -10,6 +10,7 @@ import {
   Phone,
   Lock,
   Info,
+  PhoneIcon,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/Input";
@@ -53,7 +54,7 @@ const RegisterComponent = () => {
     name: "",
     email: "",
     phone: "",
-    countryCode: "+966",
+    countryCode: "+20",
     password: "",
     ref: "",
     role: "",
@@ -198,23 +199,6 @@ const RegisterComponent = () => {
                   required
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="name" className="flex items-center gap-2">
-                  <User className="h-4 w-4 text-muted-foreground" />
-
-                  {lang === "ar" ? "رمز الإحالة" : "Referral Code"}
-                </Label>
-                <Input
-                  name="ref"
-                  placeholder={
-                    lang === "ar"
-                      ? "أدخل رمز الإحالة"
-                      : "Enter your referral code"
-                  }
-                  value={formData.ref}
-                  onChange={handleInputChange}
-                />
-              </div>
 
               <div className="space-y-2">
                 <Label htmlFor="email" className="flex items-center gap-2">
@@ -238,7 +222,7 @@ const RegisterComponent = () => {
                 <div className="flex items-center gap-2">
                   <Label htmlFor="phone">
                     {" "}
-                    {lang === "ar" ? "رقم الهاتف" : "Phone Number"}
+                    <PhoneIcon className="h-4 w-4 text-muted-foreground" />
                   </Label>
                   <select
                     className={`
@@ -264,15 +248,13 @@ const RegisterComponent = () => {
                   </select>
 
                   <Input
-                    className={` 
-                      
-                         text-white placeholder-gray-400 border-gray-200
-                          
-                    `}
+                    className={` flex-1 text-white placeholder-gray-400 border-gray-200 `}
                     name="phone"
                     placeholder="123456789"
                     value={formData.phone}
                     onChange={handleInputChange}
+                    required
+                    type="tel"
                   />
                 </div>
               </div>
@@ -344,6 +326,23 @@ const RegisterComponent = () => {
                     )}
                   </span>
                 </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="name" className="flex items-center gap-2">
+                  <User className="h-4 w-4 text-muted-foreground" />
+
+                  {lang === "ar" ? "(اختياري) رمز الإحالة" : "Referral Code"}
+                </Label>
+                <Input
+                  name="ref"
+                  placeholder={
+                    lang === "ar"
+                      ? "أدخل رمز الإحالة"
+                      : "Enter your referral code"
+                  }
+                  value={formData.ref}
+                  onChange={handleInputChange}
+                />
               </div>
 
               <div className="flex items-center gap-2">

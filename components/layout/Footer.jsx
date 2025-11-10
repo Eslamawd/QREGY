@@ -187,7 +187,7 @@ export const Footer = () => {
           </p>
           <div className="flex items-center gap-6 text-sm">
             <a
-              href="/terms"
+              href="/privacy"
               className="text-muted-foreground hover:text-primary transition-colors"
             >
               {lang === "ar" ? "سياسة الخصوصية" : "Privacy Policy"}
@@ -197,12 +197,6 @@ export const Footer = () => {
               className="text-muted-foreground hover:text-primary transition-colors"
             >
               {lang === "ar" ? "شروط الاستخدام" : "Terms of Use"}
-            </a>
-            <a
-              href="#"
-              className="text-muted-foreground hover:text-primary transition-colors"
-            >
-              {lang === "ar" ? "اتفاقية الاستخدام" : "User Agreement"}
             </a>
           </div>
         </div>

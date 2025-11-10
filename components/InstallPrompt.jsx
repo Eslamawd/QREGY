@@ -39,7 +39,7 @@ export default function InstallPrompt() {
   if (!showPrompt) return null;
 
   return (
-    <div className="fixed bottom-4 right-4  p-4 shadow-lg rounded-xl border ">
+    <div className="fixed bottom-4 right-4  p-4 shadow-lg bg-black rounded-xl border ">
       <p>Install {appName}?</p>
       <button onClick={install} className="mt-2  px-3 py-1 rounded">
         Install
