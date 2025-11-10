@@ -50,7 +50,7 @@ const MenuShowCategory = ({ table_id, restaurant_id, user_id, token }) => {
         backgroundPosition: "center",
       }}
     >
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm z-0"> </div>
+      <div className="absolute inset-0 bg-black/20 backdrop-blur-sm z-0"> </div>
       <div className="relative z-10">
         {/* Header */}
         <MenuHeader
@@ -61,7 +61,7 @@ const MenuShowCategory = ({ table_id, restaurant_id, user_id, token }) => {
         />
 
         {/* Menus List */}
-        <div className="max-w-6xl mx-auto px-4 py-10">
+        <div className="max-w-6xl mt-28 mx-auto px-4 py-10">
           <h2 className="text-2xl font-bold text-center mb-6 font-cairo">
             {t("القوائم المتاحة", "Available Menus")}
           </h2>
