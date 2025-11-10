@@ -4,6 +4,8 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Flame } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import { useState } from "react";
+// 1. استيراد مكون Image من Next.js
+import Image from "next/image";
 
 const menuItems = [
   {
@@ -99,7 +101,14 @@ export default function MenuSection() {
         {/* Menu Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filteredItems.map((item, index) => (
-            <MenuCard key={item.id} item={item} index={index} lang={lang} />
+            // 2. تمرير ما إذا كان العنصر هو الأول (والأهم لـ LCP)
+            <MenuCard
+              key={item.id}
+              item={item}
+              index={index}
+              lang={lang}
+              isFirstItem={index === 0} // تحديد أول عنصر
+            />
           ))}
         </div>
 
@@ -115,16 +124,21 @@ export default function MenuSection() {
   );
 }
 
-const MenuCard = ({ item, index, lang }) => (
+// 3. تحديث MenuCard لقبول isFirstItem
+const MenuCard = ({ item, index, lang, isFirstItem }) => (
   <div
     className="group bg-card border border-border rounded-2xl overflow-hidden shadow-soft hover:shadow-card transition-all duration-300 hover:-translate-y-2 animate-fade-in"
     style={{ animationDelay: `${index * 100}ms` }}
   >
     {/* Image */}
     <div className="relative h-48 overflow-hidden">
-      <img
+      {/* 4. استخدام مكون Image مع الأبعاد و خاصية priority */}
+      <Image
         src={item.image}
         alt={lang === "ar" ? item.name : item.nameEn}
+        width={300} // تم تعيين عرض تقريبي بالبكسل
+        height={192} // تم تعيين ارتفاع تقريبي بالبكسل (يتطابق مع h-48 حيث 48 * 4 = 192px)
+        priority={isFirstItem} // تحميل الأولوية للعنصر الأول فقط (LCP)
         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
       />
       <div className="absolute top-3 left-3 flex gap-2">
