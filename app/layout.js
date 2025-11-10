@@ -26,6 +26,13 @@ export const metadata = {
     statusBarStyle: "black-translucent",
     title: "QR EGY | نظام القوائم الذكية للمطاعم",
   },
+  other: {
+    "preconnect-api": {
+      rel: "preconnect",
+      href: "https://api.qregy.com",
+      crossOrigin: "anonymous", // مهم لبعض أنواع الطلبات
+    },
+  },
   icons: {
     icon: "/qregylogo_192x192.png",
     apple: "/qregylogo_192x192.png",
@@ -34,7 +41,7 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html dir="rtl">
+    <html dir="rtl" lang="ar">
       <body className={`${poppins.variable} ${tajawal.variable} antialiased`}>
         {/* ✅ تحميل pwa.js بشكل صحيح */}
         <Script src="/pwa.js" strategy="afterInteractive" />

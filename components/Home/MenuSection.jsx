@@ -14,7 +14,7 @@ const menuItems = [
     descriptionEn:
       "Fresh beef burger with cheddar cheese, lettuce, tomato, and special sauce",
     price: 45,
-    image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400",
+    image: "/images/berger.jpeg",
     category: "برجر",
     isPopular: true,
   },
@@ -25,7 +25,7 @@ const menuItems = [
     description: "معكرونة كريمية مع الدجاج والفطر وجبن البارميزان",
     descriptionEn: "Creamy pasta with chicken, mushrooms, and parmesan cheese",
     price: 38,
-    image: "https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?w=400",
+    image: "/images/pasta.jpeg",
     category: "باستا",
   },
   {
@@ -35,7 +35,7 @@ const menuItems = [
     description: "بيتزا إيطالية كلاسيكية مع الطماطم والموتزاريلا والريحان",
     descriptionEn: "Classic Italian pizza with tomato, mozzarella, and basil",
     price: 42,
-    image: "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=400",
+    image: "/images/pizza.jpeg",
     category: "بيتزا",
     isPopular: true,
   },
@@ -47,7 +47,7 @@ const menuItems = [
     descriptionEn:
       "Grilled chicken with fresh vegetables and garlic sauce in soft bread",
     price: 28,
-    image: "https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=400",
+    image: "/images/dgag.jpeg",
     category: "مأكولات شرقية",
     isSpicy: true,
   },
