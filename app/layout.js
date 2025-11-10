@@ -7,12 +7,14 @@ const tajawal = Tajawal({
   variable: "--font-tajawal",
   subsets: ["arabic"],
   weight: ["200", "300", "400", "500", "700", "800", "900"],
+  display: "swap",
 });
 
 const poppins = Poppins({
   variable: "--font-poppins",
   subsets: ["latin"],
   weight: ["400", "600", "700"],
+  display: "swap",
 });
 
 export const metadata = {
