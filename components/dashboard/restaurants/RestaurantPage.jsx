@@ -3,10 +3,20 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Download, QrCode, Edit, Eye, Trash2, Car } from "lucide-react";
+import {
+  Download,
+  QrCode,
+  Edit,
+  Eye,
+  Trash2,
+  Car,
+  Globe,
+  Star,
+  StarIcon,
+} from "lucide-react";
 import { toast } from "sonner";
 import { jsPDF } from "jspdf";
-import { getRestaurant } from "@/lib/restaurantApi";
+import { getRestaurant, linksRestaurant } from "@/lib/restaurantApi";
 import api from "@/api/axiosClient";
 import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
@@ -34,6 +44,13 @@ import CreateTableForm from "./table/CreateTableForm";
 import UpdateTableForm from "./table/UpdateTableForm";
 import { deleteTable } from "@/lib/tableApi";
 import { usePathname, useRouter } from "next/navigation";
+import {
+  FaFacebook,
+  FaGoogleDrive,
+  FaInstagram,
+  FaTiktok,
+} from "react-icons/fa";
+import { FaGoogle } from "react-icons/fa6";
 
 /**
  * RestaurantPage — Dark Neon style (glassmorphism + neon gradients)
@@ -49,6 +66,15 @@ const RestaurantPage = ({ id }) => {
   const [tables, setTables] = useState([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedMenu, setSelectedMenu] = useState(null);
+  const [showLinksModal, setShowLinksModal] = useState(false);
+  const [linksForm, setLinksForm] = useState({
+    restaurant_id: "",
+    google_review: "",
+    facebook: "",
+    instagram: "",
+    tiktok: "",
+    website: "",
+  });
 
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
@@ -111,6 +137,14 @@ const RestaurantPage = ({ id }) => {
       setRestaurant(data);
       setMenus(data.menus || []);
       setTables(data.tables || []);
+      setLinksForm({
+        restaurant_id: data.id || "",
+        google_review: data.links?.google_review || "",
+        facebook: data.links?.facebook || "",
+        instagram: data.links?.instagram || "",
+        tiktok: data.links?.tiktok || "",
+        website: data.links?.website || "",
+      });
     } catch (err) {
       console.error(err);
       toast.error(
@@ -124,6 +158,31 @@ const RestaurantPage = ({ id }) => {
     fetchRestaurant();
   }, [id, lang]);
 
+  const normalizeUrl = (url) => {
+    if (!url) return null;
+
+    // تصحيح الاستخدام الغلط مثل "https;//"
+    url = url
+      .replace("://", "___TEMP___")
+      .replace(";", ":")
+      .replace("___TEMP___", "://");
+
+    // لو مفيش http أو https
+    if (!url.startsWith("http://") && !url.startsWith("https://")) {
+      url = "https://" + url;
+    }
+
+    return url;
+  };
+
+  const data = {
+    restaurant_id: linksForm.restaurant_id,
+    facebook: normalizeUrl(linksForm.facebook),
+    instagram: normalizeUrl(linksForm.instagram),
+    tiktok: normalizeUrl(linksForm.tiktok),
+    website: normalizeUrl(linksForm.website),
+    google_review: normalizeUrl(linksForm.google_review),
+  };
   // 🔹 تحميل QR لأي نوع (مطعم - مطبخ - كاشير)
   const handleDownloadQR = async (type = "image", model, qrId, tableName) => {
     try {
@@ -408,6 +467,81 @@ const RestaurantPage = ({ id }) => {
             </p>
           )}
         </section>
+        {/* Restaurant Links */}
+        <section className="mt-12">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold text-white">
+              {lang === "ar" ? "روابط المطعم" : "Restaurant Links"}
+            </h2>
+
+            <Button
+              onClick={() => setShowLinksModal(true)}
+              size="sm"
+              variant="outline"
+              className="border-white/10"
+            >
+              {lang === "ar" ? "تعديل الروابط" : "Edit Links"}
+            </Button>
+          </div>
+
+          {restaurant?.links ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+              {[
+                {
+                  label: "Google Review",
+                  icon: <FaGoogle className="w-5 h-5 text-red-600" />,
+                  field: "google_review",
+                },
+                {
+                  label: "Facebook",
+                  icon: <FaFacebook className="w-5 h-5 text-blue-400" />,
+                  field: "facebook",
+                },
+                {
+                  label: "Instagram",
+                  icon: <FaInstagram className="w-5 h-5 text-pink-400" />,
+                  field: "instagram",
+                },
+                {
+                  label: "TikTok",
+                  icon: <FaTiktok className="w-5 h-5 text-blue-400" />,
+                  field: "tiktok",
+                },
+                {
+                  label: "Website",
+                  icon: <Globe className="w-5 h-5 text-green-400" />,
+                  field: "website",
+                },
+              ]
+                .filter((item) => restaurant.links[item.field])
+                .map((item, index) => (
+                  <motion.div
+                    key={index}
+                    whileHover={{ translateY: -6 }}
+                    className="rounded-2xl p-4 bg-gradient-to-br from-[#071025]/50 to-[#0b1220]/50 border border-white/6 shadow-md flex flex-col gap-3"
+                  >
+                    <h3 className="font-semibold text-white text-lg">
+                      {item.icon} {item.label}
+                    </h3>
+
+                    <a
+                      href={restaurant.links[item.field]}
+                      target="_blank"
+                      className="text-cyan-300 underline break-all text-sm"
+                    >
+                      {restaurant.links[item.field]}
+                    </a>
+                  </motion.div>
+                ))}
+            </div>
+          ) : (
+            <p className="text-gray-400 text-center py-6">
+              {lang === "ar"
+                ? "لم يتم إضافة روابط بعد."
+                : "No links added yet."}
+            </p>
+          )}
+        </section>
       </div>
 
       {/* Dialogs */}
@@ -517,6 +651,69 @@ const RestaurantPage = ({ id }) => {
               onCancel={() => setIsDialogOpenTable(false)}
             />
           )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showLinksModal} onOpenChange={setShowLinksModal}>
+        <DialogContent className="max-w-xl bg-gradient-to-b from-[#071025]/80 to-[#020217]/80 border border-white/8 shadow-2xl backdrop-blur-md text-white rounded-2xl">
+          <DialogHeader>
+            <DialogTitle>
+              {lang === "ar" ? "تعديل روابط المطعم" : "Edit Restaurant Links"}
+            </DialogTitle>
+            <DialogDescription>
+              {lang === "ar"
+                ? "قم بتعديل روابط السوشيال و Google Review."
+                : "Modify social media & Google Review links."}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 mt-4">
+            {[
+              { key: "google_review", label: "Google Review" },
+              { key: "facebook", label: "Facebook" },
+              { key: "instagram", label: "Instagram" },
+              { key: "tiktok", label: "TikTok" },
+              { key: "website", label: "Website" },
+            ].map((item) => (
+              <div key={item.key} className="flex flex-col gap-1">
+                <label className="text-sm text-gray-300">{item.label}</label>
+                <input
+                  type="text"
+                  value={linksForm[item.key]}
+                  onChange={(e) =>
+                    setLinksForm({ ...linksForm, [item.key]: e.target.value })
+                  }
+                  className="w-full p-2 bg-black/30 border border-white/10 rounded-lg text-white"
+                />
+              </div>
+            ))}
+
+            <Button
+              className="w-full bg-cyan-600 hover:bg-cyan-700"
+              onClick={async () => {
+                try {
+                  const response = await linksRestaurant(data);
+
+                  toast.success(
+                    lang === "ar" ? "تم تحديث الروابط" : "Links updated"
+                  );
+
+                  setShowLinksModal(false);
+                  setRestaurant((prev) => ({
+                    ...prev,
+                    links: response.links,
+                  }));
+                } catch (err) {
+                  console.error(err);
+                  toast.error(
+                    lang === "ar" ? "حدث خطأ" : "Error updating links"
+                  );
+                }
+              }}
+            >
+              {lang === "ar" ? "حفظ" : "Save"}
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
 

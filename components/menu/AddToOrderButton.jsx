@@ -19,6 +19,7 @@ export default function AddToOrderButton({
   item,
   lang,
   restaurant_id,
+  setSelectedMenu,
   table_id,
 }) {
   const { addToOrder, setRestaurantId, setTableId } = useOrder();
@@ -68,6 +69,7 @@ export default function AddToOrderButton({
     setSelectedOptions([]);
     setQuantity(1);
     setComment("");
+    setSelectedMenu(null);
   };
 
   return (

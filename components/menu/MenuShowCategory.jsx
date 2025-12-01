@@ -4,12 +4,19 @@ import { useEffect, useState } from "react";
 import { getRestaurantWithUser } from "@/lib/restaurantApi";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, MapPin, Phone, Flame, X } from "lucide-react";
+import { Plus, MapPin, Phone, Flame, X, Globe } from "lucide-react";
 import { toast } from "sonner";
 import { useLanguage } from "@/context/LanguageContext";
 import { MenuHeader } from "../layout/MenuHeader";
 import AddToOrderButton from "./AddToOrderButton";
 import { useCurrency } from "@/context/CurrencyContext";
+import {
+  FaGoogle,
+  FaFacebook,
+  FaInstagram,
+  FaTiktok,
+  FaStar,
+} from "react-icons/fa";
 
 const MenuShowCategory = ({ table_id, restaurant_id, user_id, token }) => {
   const { lang } = useLanguage();
@@ -18,6 +25,29 @@ const MenuShowCategory = ({ table_id, restaurant_id, user_id, token }) => {
   const { formatPrice } = useCurrency();
   const isArabic = lang === "ar";
   const t = (ar, en) => (isArabic ? ar : en);
+
+  const socialLinks = [
+    {
+      icon: <FaGoogle className="w-10 h-10 text-red-600" />,
+      field: "google_review",
+    },
+    {
+      icon: <FaFacebook className="w-10 h-10 text-blue-500" />,
+      field: "facebook",
+    },
+    {
+      icon: <FaInstagram className="w-10 h-10 text-pink-500" />,
+      field: "instagram",
+    },
+    {
+      icon: <FaTiktok className="w-10 h-10" />,
+      field: "tiktok",
+    },
+    {
+      icon: <Globe className="w-10 h-10 text-green-400" />,
+      field: "website",
+    },
+  ];
 
   useEffect(() => {
     const fetchData = async () => {
@@ -59,6 +89,43 @@ const MenuShowCategory = ({ table_id, restaurant_id, user_id, token }) => {
           user_id={user_id}
           token={token}
         />
+
+        {/* Auto Scrolling Icons */}
+        <div className="overflow-hidden w-full py-4  mt-16">
+          <motion.div
+            className="flex gap-10"
+            animate={{ x: ["100%", "-100%"] }}
+            transition={{
+              repeat: Infinity,
+              duration: 27,
+              ease: "linear",
+            }}
+          >
+            {[...socialLinks] // نكررهم مرتين للـ loop
+              .filter((s) => restaurant.links[s.field])
+              .map((item, i) => (
+                <a
+                  key={i}
+                  href={
+                    restaurant.links[item.field].startsWith("http")
+                      ? restaurant.links[item.field]
+                      : "https://" + restaurant.links[item.field]
+                  }
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center w-16 h-16  hover:scale-110 transition"
+                >
+                  {item.icon}
+                </a>
+              ))}
+          </motion.div>
+        </div>
+
+        <div className=" flex overflow-hidden w-full  mt-6 justify-center">
+          {restaurant.links.google_review && (
+            <GoogleReviewCard link={restaurant.links?.google_review} />
+          )}
+        </div>
 
         {/* Menus List */}
         <div className="max-w-6xl mt-28 mx-auto px-4 py-10">
@@ -175,6 +242,7 @@ const MenuShowCategory = ({ table_id, restaurant_id, user_id, token }) => {
 
                                   <AddToOrderButton
                                     table_id={table_id}
+                                    setSelectedMenu={setSelectedMenu}
                                     item={item}
                                     restaurant_id={restaurant_id}
                                     lang={lang}
@@ -226,3 +294,38 @@ const MenuShowCategory = ({ table_id, restaurant_id, user_id, token }) => {
 };
 
 export default MenuShowCategory;
+
+function GoogleReviewCard({ link }) {
+  return (
+    <motion.a
+      href={link}
+      target="_blank"
+      rel="noopener noreferrer"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, ease: "easeOut" }}
+      whileHover={{ scale: 1.03 }}
+      className="
+        w-full max-w-sm 
+       
+        flex flex-col  text-center  justify-center items-center cursor-pointer
+         transition
+      "
+    >
+      {/* Google Logo */}
+      <div className="p-3 flex justify-center text-center  items-center rounded-full shadow-lg">
+        <FaGoogle className="flex text-yellow-500 text-4xl" />
+      </div>
+
+      <div className="flex flex-col">
+        <h3 className="text-white font-semibold text-lg">Google Reviews</h3>
+
+        <div className="flex items-center gap-1 mt-1">
+          {[...Array(6)].map((_, i) => (
+            <FaStar key={i} className="text-yellow-400" />
+          ))}
+        </div>
+      </div>
+    </motion.a>
+  );
+}
