@@ -1,0 +1,48 @@
+name: Next.js CI
+
+on:
+  push:
+    branches: ["main", "master"]
+  pull_request:
+    branches: ["main", "master"]
+  # يسمح بالتشغيل اليدوي من واجهة GitHub
+  workflow_dispatch:
+
+jobs:
+  build_and_test:
+    runs-on: ubuntu-latest
+
+    # اختيار بيئة Node.js
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x] # اختبار على إصدارات Node محددة
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "npm" # يمكن تغييرها إلى 'yarn' أو 'pnpm' حسب مدير الحزم لديك
+
+      # خطوة تثبيت التبعيات (الاعتمادات)
+      - name: Install dependencies
+        run: npm install
+
+      # خطوة تشغيل Linter للتحقق من جودة الكود (إذا كان لديك نص npm اسمه 'lint')
+      - name: Run ESLint
+        run: npm run lint
+
+      # خطوة تشغيل الاختبارات (إذا كان لديك نص npm اسمه 'test')
+      - name: Run Tests
+        run: npm test --if-present
+
+      # خطوة البناء الأساسية للتأكد من عدم وجود أخطاء وقت البناء
+      - name: Next.js Build
+        run: npm run build
+        env:
+          # هنا يمكنك تمرير أي متغيرات بيئة (ENV) يحتاجها البناء
+          # SECRET_KEY: ${{ secrets.NEXT_PUBLIC_SECRET_KEY }}
+          # ملاحظة: قم بتخزين المتغيرات الحساسة في GitHub Secrets
+          NODE_ENV: production
