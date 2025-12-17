@@ -15,7 +15,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useLanguage } from "@/context/LanguageContext";
 import { useCurrency } from "@/context/CurrencyContext";
@@ -36,8 +36,7 @@ export default function DashboardPage() {
   const [monthlyRevenue, setMonthlyRevenue] = useState([]);
   const [topRestaurants, setTopRestaurants] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true);
     try {
       const res = await loadAllData();
@@ -66,12 +65,11 @@ export default function DashboardPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [lang]); // أضف lang هنا إذا كانت الدالة تعتمد عليها
 
   useEffect(() => {
     fetchData();
-  }, []);
-
+  }, [fetchData]);
   const cards = [
     {
       id: 1,
