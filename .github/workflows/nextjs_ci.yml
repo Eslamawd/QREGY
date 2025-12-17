@@ -30,6 +30,10 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+        # خطوة تحديث التبعيات لتصحيح الثغرات الأمنية
+      - name: Update dependencies
+        run: npm audit fix
+
       # خطوة تشغيل Linter للتحقق من جودة الكود (إذا كان لديك نص npm اسمه 'lint')
       - name: Run ESLint
         run: npm run lint
