@@ -3,19 +3,42 @@ name: Next.js CI
 on:
   push:
     branches: ["main", "master"]
+    paths:
+      - "api/**"
+      - "app/**"
+      - "components/**"
+      - "context/**"
+      - "hooks/**"
+      - "lib/**"
+      - "services/**"
+      - "utils/**"
+      - "public/**"
+      - "package.json"
+
   pull_request:
     branches: ["main", "master"]
-  # يسمح بالتشغيل اليدوي من واجهة GitHub
+    # يُفضل إضافة الـ paths هنا أيضاً لتوحيد السلوك
+    paths:
+      - "api/**"
+      - "app/**"
+      - "components/**"
+      - "context/**"
+      - "hooks/**"
+      - "lib/**"
+      - "services/**"
+      - "utils/**"
+      - "public/**"
+      - "package.json"
+
   workflow_dispatch:
 
 jobs:
   build_and_test:
     runs-on: ubuntu-latest
 
-    # اختيار بيئة Node.js
     strategy:
       matrix:
-        node-version: [18.x, 20.x] # اختبار على إصدارات Node محددة
+        node-version: [20.x] # نصيحة: 20.x كافية حالياً وهي المستقرة (LTS) لتسريع الوقت
 
     steps:
       - uses: actions/checkout@v4
@@ -24,29 +47,22 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          cache: "npm" # يمكن تغييرها إلى 'yarn' أو 'pnpm' حسب مدير الحزم لديك
+          cache: "npm"
 
-      # خطوة تثبيت التبعيات (الاعتمادات)
       - name: Install dependencies
         run: npm install
 
-        # خطوة تحديث التبعيات لتصحيح الثغرات الأمنية
-      - name: Update dependencies
-        run: npm audit fix
+      - name: Audit fix
+        run: npm audit fix --force # أضفنا --force لضمان الإصلاح التلقائي داخل البيئة التخيلية
 
-      # خطوة تشغيل Linter للتحقق من جودة الكود (إذا كان لديك نص npm اسمه 'lint')
       - name: Run ESLint
         run: npm run lint
 
-      # خطوة تشغيل الاختبارات (إذا كان لديك نص npm اسمه 'test')
       - name: Run Tests
         run: npm test --if-present
 
-      # خطوة البناء الأساسية للتأكد من عدم وجود أخطاء وقت البناء
       - name: Next.js Build
         run: npm run build
         env:
-          # هنا يمكنك تمرير أي متغيرات بيئة (ENV) يحتاجها البناء
-          # SECRET_KEY: ${{ secrets.NEXT_PUBLIC_SECRET_KEY }}
-          # ملاحظة: قم بتخزين المتغيرات الحساسة في GitHub Secrets
           NODE_ENV: production
+          # إذا كان المشروع يحتاج اتصال بـ Database وقت الـ Build، ستحتاج لإضافة متغيرات البيئة هنا
