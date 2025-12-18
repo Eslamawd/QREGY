@@ -66,3 +66,33 @@ jobs:
         env:
           NODE_ENV: production
           # إذا كان المشروع يحتاج اتصال بـ Database وقت الـ Build، ستحتاج لإضافة متغيرات البيئة هنا
+
+  deploy:
+    needs: build_and_test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+
+    steps:
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            # 1. Go to your site folder (CHANGE THIS to your actual folder name)
+            cd /htdocs/QREGY
+
+            # 2. Pull the latest code
+            git pull origin main
+
+            # 3. Load Node.js environment & Install
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            npm install
+            npm audit fix 
+
+            # 4. Build and Restart
+            npm run build
+            pm2 restart all || npm run start 
+            pm2 save
