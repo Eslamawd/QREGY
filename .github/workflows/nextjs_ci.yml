@@ -92,6 +92,7 @@ jobs:
             npm install
             npm audit fix 
 
+            npm ci
             # 4. Build and Restart
             npm run build
             pm2 restart qregy-next || npm run start qregy-next 
