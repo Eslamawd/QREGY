@@ -94,5 +94,5 @@ jobs:
 
             # 4. Build and Restart
             npm run build
-            pm2 restart all || npm run start 
+            pm2 restart qregy-next || npm run start qregy-next 
             pm2 save
