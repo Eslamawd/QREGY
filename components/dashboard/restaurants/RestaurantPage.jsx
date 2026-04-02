@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,6 +14,9 @@ import {
   Globe,
   Star,
   StarIcon,
+  MapPin,
+  Clock3,
+  Ruler,
 } from "lucide-react";
 import { toast } from "sonner";
 import { jsPDF } from "jspdf";
@@ -52,6 +56,13 @@ import {
 } from "react-icons/fa";
 import { FaGoogle } from "react-icons/fa6";
 
+const ServiceAreaMap = dynamic(
+  () => import("@/components/location/ServiceAreaMap"),
+  {
+    ssr: false,
+  },
+);
+
 /**
  * RestaurantPage — Dark Neon style (glassmorphism + neon gradients)
  * - keeps your logic (getRestaurant, QR download, menus, tables, dialogs)
@@ -87,7 +98,7 @@ const RestaurantPage = ({ id }) => {
   // الصفحات اللي مش عايز فيها Header و Footer
   const hideLayoutRoutes = ["/admin"];
   const shouldHideLayout = hideLayoutRoutes.some((path) =>
-    pathname.startsWith(path)
+    pathname.startsWith(path),
   );
 
   // Menu handlers
@@ -123,7 +134,7 @@ const RestaurantPage = ({ id }) => {
       setTables((prev) => prev.filter((c) => c.id !== selectedTable.id));
       setShowDeleteDialog(false);
       toast.success(
-        lang === "ar" ? "تم حذف الطاولة بنجاح" : "Table deleted successfully"
+        lang === "ar" ? "تم حذف الطاولة بنجاح" : "Table deleted successfully",
       );
     } catch (err) {
       toast.error(lang === "ar" ? "فشل حذف الطاولة" : "Failed to delete table");
@@ -150,7 +161,7 @@ const RestaurantPage = ({ id }) => {
       toast.error(
         lang === "ar"
           ? "فشل في تحميل بيانات المطعم"
-          : "Failed to load restaurant"
+          : "Failed to load restaurant",
       );
     }
   };
@@ -250,6 +261,63 @@ const RestaurantPage = ({ id }) => {
           {restaurant.name}
         </h1>
         <p className="mt-2 text-sm text-gray-400">{restaurant.address}</p>
+      </div>
+
+      {/* Service location */}
+      <div className="max-w-6xl mx-auto px-4 mt-10">
+        <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-[#071025]/60 to-[#0b1220]/40 p-5 shadow-lg">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <h3 className="text-base font-semibold text-cyan-300">
+                {lang === "ar"
+                  ? "موقع الخدمة ونطاق التوصيل"
+                  : "Service location and delivery zone"}
+              </h3>
+              <p className="mt-1 text-sm text-gray-400">
+                {restaurant.address ||
+                  (lang === "ar" ? "لا يوجد عنوان" : "No address provided")}
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2 text-xs">
+              <span className="inline-flex items-center gap-1 rounded-full bg-white/5 px-3 py-1.5 text-gray-200">
+                <MapPin className="h-3.5 w-3.5 text-cyan-300" />
+                {restaurant.latitude && restaurant.longitude
+                  ? `${Number(restaurant.latitude).toFixed(6)}, ${Number(restaurant.longitude).toFixed(6)}`
+                  : lang === "ar"
+                    ? "غير محدد"
+                    : "Not set"}
+              </span>
+              <span className="inline-flex items-center gap-1 rounded-full bg-white/5 px-3 py-1.5 text-gray-200">
+                <Ruler className="h-3.5 w-3.5 text-cyan-300" />
+                {lang === "ar"
+                  ? `${restaurant.delivery_radius_km || 10} كم نطاق توصيل`
+                  : `${restaurant.delivery_radius_km || 10} km delivery radius`}
+              </span>
+              <span className="inline-flex items-center gap-1 rounded-full bg-white/5 px-3 py-1.5 text-gray-200">
+                <Clock3 className="h-3.5 w-3.5 text-cyan-300" />
+                {restaurant.open_time && restaurant.close_time
+                  ? `${restaurant.open_time?.slice(0, 5)} - ${restaurant.close_time?.slice(0, 5)}`
+                  : lang === "ar"
+                    ? "ساعات العمل غير محددة"
+                    : "Operating hours not set"}
+              </span>
+            </div>
+          </div>
+
+          {restaurant.latitude && restaurant.longitude ? (
+            <ServiceAreaMap
+              lat={Number(restaurant.latitude)}
+              lng={Number(restaurant.longitude)}
+              radiusKm={Number(restaurant.delivery_radius_km || 10)}
+            />
+          ) : (
+            <div className="rounded-xl border border-dashed border-white/15 bg-black/20 p-8 text-center text-sm text-gray-400">
+              {lang === "ar"
+                ? "حدد موقع المطعم من نموذج التعديل لعرض الـ pin ونطاق الخدمة هنا."
+                : "Set restaurant coordinates in the edit form to display the pin and service area here."}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Content */}
@@ -434,7 +502,7 @@ const RestaurantPage = ({ id }) => {
                             "image",
                             "tables",
                             table.id,
-                            table.name
+                            table.name,
                           )
                         }
                       >
@@ -448,7 +516,7 @@ const RestaurantPage = ({ id }) => {
                             "pdf",
                             "tables",
                             table.id,
-                            table.name
+                            table.name,
                           )
                         }
                       >
@@ -554,8 +622,8 @@ const RestaurantPage = ({ id }) => {
                   ? "إضافة القائمة"
                   : "Add Menu"
                 : lang === "ar"
-                ? "تعديل القائمة"
-                : "Update Menu"}
+                  ? "تعديل القائمة"
+                  : "Update Menu"}
             </DialogTitle>
             <DialogDescription>
               {isNew
@@ -563,8 +631,8 @@ const RestaurantPage = ({ id }) => {
                   ? "املأ بيانات القائمة لإنشائها."
                   : "Fill Menu details to create."
                 : lang === "ar"
-                ? "قم بتعديل بيانات القائمة ثم احفظ."
-                : "Edit Menu details and save."}
+                  ? "قم بتعديل بيانات القائمة ثم احفظ."
+                  : "Edit Menu details and save."}
             </DialogDescription>
           </DialogHeader>
 
@@ -577,7 +645,7 @@ const RestaurantPage = ({ id }) => {
 
                 setIsDialogOpen(false);
                 toast.success(
-                  lang === "ar" ? "تم إنشاء القائمة" : "Menu created"
+                  lang === "ar" ? "تم إنشاء القائمة" : "Menu created",
                 );
                 fetchRestaurant();
               }}
@@ -588,11 +656,11 @@ const RestaurantPage = ({ id }) => {
               menu={selectedMenu}
               onSuccess={(updated) => {
                 setMenus((prev) =>
-                  prev.map((r) => (r.id === updated.id ? updated : r))
+                  prev.map((r) => (r.id === updated.id ? updated : r)),
                 );
                 setIsDialogOpen(false);
                 toast.success(
-                  lang === "ar" ? "تم تحديث القائمة" : "Menu updated"
+                  lang === "ar" ? "تم تحديث القائمة" : "Menu updated",
                 );
               }}
               onCancel={() => setIsDialogOpen(false)}
@@ -610,8 +678,8 @@ const RestaurantPage = ({ id }) => {
                   ? "إضافة طاولة"
                   : "Add Table"
                 : lang === "ar"
-                ? "تعديل الطاولة"
-                : "Update Table"}
+                  ? "تعديل الطاولة"
+                  : "Update Table"}
             </DialogTitle>
             <DialogDescription>
               {isNew
@@ -619,8 +687,8 @@ const RestaurantPage = ({ id }) => {
                   ? "املأ بيانات الطاولة لإنشائها."
                   : "Fill Table details to create."
                 : lang === "ar"
-                ? "قم بتعديل بيانات الطاولة ثم احفظ."
-                : "Edit Table details and save."}
+                  ? "قم بتعديل بيانات الطاولة ثم احفظ."
+                  : "Edit Table details and save."}
             </DialogDescription>
           </DialogHeader>
 
@@ -631,7 +699,7 @@ const RestaurantPage = ({ id }) => {
                 setTables((prev) => [newTable, ...prev]);
                 setIsDialogOpenTable(false);
                 toast.success(
-                  lang === "ar" ? "تم إضافة الطاولة" : "Table added"
+                  lang === "ar" ? "تم إضافة الطاولة" : "Table added",
                 );
               }}
               onCancel={() => setIsDialogOpenTable(false)}
@@ -641,11 +709,13 @@ const RestaurantPage = ({ id }) => {
               table={selectedTable}
               onSuccess={(updatedTable) => {
                 setTables((prev) =>
-                  prev.map((t) => (t.id === updatedTable.id ? updatedTable : t))
+                  prev.map((t) =>
+                    t.id === updatedTable.id ? updatedTable : t,
+                  ),
                 );
                 setIsDialogOpenTable(false);
                 toast.success(
-                  lang === "ar" ? "تم تحديث الطاولة" : "Table updated"
+                  lang === "ar" ? "تم تحديث الطاولة" : "Table updated",
                 );
               }}
               onCancel={() => setIsDialogOpenTable(false)}
@@ -695,7 +765,7 @@ const RestaurantPage = ({ id }) => {
                   const response = await linksRestaurant(data);
 
                   toast.success(
-                    lang === "ar" ? "تم تحديث الروابط" : "Links updated"
+                    lang === "ar" ? "تم تحديث الروابط" : "Links updated",
                   );
 
                   setShowLinksModal(false);
@@ -706,7 +776,7 @@ const RestaurantPage = ({ id }) => {
                 } catch (err) {
                   console.error(err);
                   toast.error(
-                    lang === "ar" ? "حدث خطأ" : "Error updating links"
+                    lang === "ar" ? "حدث خطأ" : "Error updating links",
                   );
                 }
               }}
@@ -761,8 +831,8 @@ const InfoCardNeon = ({
     glow === "cyan"
       ? "from-cyan-600/30 to-blue-700/10 ring-cyan-400/30"
       : glow === "violet"
-      ? "from-fuchsia-600/30 to-pink-600/10 ring-fuchsia-400/30"
-      : "from-emerald-600/30 to-cyan-600/10 ring-emerald-400/30";
+        ? "from-fuchsia-600/30 to-pink-600/10 ring-fuchsia-400/30"
+        : "from-emerald-600/30 to-cyan-600/10 ring-emerald-400/30";
 
   return (
     <motion.div

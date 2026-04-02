@@ -106,7 +106,7 @@ const SubscriptionsManagement = () => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 20 }}
-      className=" text-gray-200"
+      className="text-foreground"
     >
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">
@@ -199,15 +199,15 @@ const SubscriptionsManagement = () => {
                           Date.now() >= new Date(sub.end_date).getTime()
                             ? "text-red-600" // انتهى الاشتراك
                             : Date.now() >= new Date(sub.start_date).getTime()
-                            ? "text-green-600" // نشط الآن
-                            : "text-yellow-600" // لم يبدأ بعد
+                              ? "text-green-600" // نشط الآن
+                              : "text-yellow-600" // لم يبدأ بعد
                         }
                       >
                         {Date.now() >= new Date(sub.end_date).getTime()
                           ? "Expired"
                           : Date.now() >= new Date(sub.start_date).getTime()
-                          ? "Active"
-                          : "Pending"}
+                            ? "Active"
+                            : "Pending"}
                       </span>
                     </TableCell>
                   </TableRow>

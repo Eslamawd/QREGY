@@ -27,15 +27,18 @@ const SubscriptionCard = ({ plan, isSelected, onClick, onRenew }) => {
   return (
     <motion.div
       layout
-      whileHover={{ scale: 1.05 }}
-      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+      whileHover={{ scale: 1.03, rotateX: -4, rotateY: 4, y: -6 }}
+      transition={{ type: "spring", stiffness: 260, damping: 18 }}
       onClick={onClick}
-      className={`relative cursor-pointer rounded-2xl shadow-xl border border-gray-800 p-6 flex flex-col justify-between transition ${
+      style={{ transformStyle: "preserve-3d" }}
+      className={`group relative flex cursor-pointer flex-col justify-between rounded-2xl border p-6 shadow-xl transition ${
         isSelected
-          ? "bg-gradient-to-r from-purple-700 to-purple-500"
-          : "bg-gray-900 hover:border-purple-600"
+          ? "border-cyan-300/40 bg-gradient-to-r from-cyan-700 to-blue-500"
+          : "border-white/15 bg-[linear-gradient(165deg,rgba(255,255,255,0.14),rgba(255,255,255,0.04))] backdrop-blur-md hover:border-cyan-400/35"
       }`}
     >
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(34,211,238,0.14),transparent_60%)] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+
       {/* ✅ شارة VIP */}
       {hasVip && (
         <div className="absolute top-4 right-4 bg-yellow-500 text-black font-bold text-xs px-3 py-1 rounded-full shadow-lg">
@@ -44,26 +47,24 @@ const SubscriptionCard = ({ plan, isSelected, onClick, onRenew }) => {
       )}
 
       {/* ✅ العنوان */}
-      <h3 className="text-2xl font-bold mb-3 text-white text-center">
+      <h3 className="text-2xl font-bold mb-3  text-center">
         {lang === "ar" ? plan.name : plan.name_en}
       </h3>
 
       {/* ✅ السعر */}
       <div className="text-center mb-4">
-        <p className="text-4xl font-extrabold text-white">
+        <p className="text-4xl font-extrabold ">
           {formatPrice(Number(plan.price))}
         </p>
-        <p className="text-sm line-through text-gray-400">
-          {formatPrice(Number(oldPrice))}
-        </p>
-        <p className="text-sm mt-1 text-gray-300">
+        <p className="text-sm line-through ">{formatPrice(Number(oldPrice))}</p>
+        <p className="text-sm mt-1 ">
           {Math.floor(plan.duration_days / 30)}{" "}
           {lang === "ar" ? "شهر" : "Month"}
         </p>
       </div>
 
       {/* ✅ التفاصيل الأساسية */}
-      <ul className="text-gray-200 text-sm space-y-1 mb-4">
+      <ul className=" text-sm space-y-1 mb-4">
         <li>
           🏠 {lang === "ar" ? "عدد المطاعم:" : "Restaurants:"}{" "}
           {plan.max_restaurants}
@@ -84,7 +85,7 @@ const SubscriptionCard = ({ plan, isSelected, onClick, onRenew }) => {
 
       {/* ✅ المميزات */}
       {plan.features?.length > 0 && (
-        <div className="bg-gray-800/50 p-3 rounded-lg mb-4 text-gray-100 text-sm">
+        <div className="mb-4 rounded-lg border border-white/10 bg-black/20 p-3 text-sm  ">
           <p className="font-semibold mb-1">
             {lang === "ar" ? "المميزات:" : "Features:"}
           </p>
@@ -105,7 +106,7 @@ const SubscriptionCard = ({ plan, isSelected, onClick, onRenew }) => {
           e.stopPropagation();
           onRenew(plan);
         }}
-        className="w-full py-3 mt-auto font-bold rounded-lg bg-orange-500 hover:bg-orange-600 transition text-white"
+        className="mt-auto w-full rounded-lg bg-orange-500 py-3 font-bold text-white transition hover:bg-orange-600"
       >
         {lang === "ar" ? "اختر الخطة" : "Choose Plan"}
       </button>
@@ -148,7 +149,7 @@ export default function SubscriptionPlans() {
     try {
       if (!user) {
         toast.error(
-          lang === "ar" ? "يرجى تسجيل الدخول أولاً" : "Please log in first"
+          lang === "ar" ? "يرجى تسجيل الدخول أولاً" : "Please log in first",
         );
         setShowRenewDialog(false);
         return;
@@ -164,7 +165,7 @@ export default function SubscriptionPlans() {
         toast.error(
           lang === "ar"
             ? "يمكنك تجديد اشتراكك فقط خلال 7 أيام قبل انتهاء صلاحيته."
-            : res.message
+            : res.message,
         );
         return;
       }
@@ -182,12 +183,18 @@ export default function SubscriptionPlans() {
 
   return (
     <>
-      <div className=" min-h-screen flex flex-col items-center justify-center p-6 md:p-12">
-        <h2 className="text-3xl md:text-5xl font-extrabold  mb-8 text-center">
+      <div className="relative flex min-h-[85vh] flex-col items-center justify-center p-6 md:p-12">
+        <div className="pointer-events-none absolute inset-x-0 top-4 mx-auto h-56 max-w-5xl bg-[radial-gradient(circle_at_center,rgba(59,130,246,0.18),transparent_72%)]" />
+        <h2 className="relative z-10 mb-3 text-center text-3xl font-extrabold md:text-5xl">
           {lang === "ar" ? "اختر خطة الاشتراك " : "Choose Your Subscription"}
         </h2>
+        <p className="relative z-10 mb-8 max-w-3xl text-center text-sm  md:text-base">
+          {lang === "ar"
+            ? "كل خطة جاهزة للطلبات باللوكيشن من أي مكان، مع إدارة كاملة للطلبات والكاشير والمطبخ داخل نفس المنصة."
+            : "Every plan is ready for location-based ordering from anywhere, with full order, cashier, and kitchen operations in one platform."}
+        </p>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full max-w-6xl">
+        <div className="relative z-10 grid w-full max-w-6xl grid-cols-1 gap-6 [perspective:1400px] md:grid-cols-2 lg:grid-cols-4">
           <AnimatePresence>
             {plans.map((plan, idx) => (
               <SubscriptionCard
@@ -202,7 +209,7 @@ export default function SubscriptionPlans() {
         </div>
       </div>
       <AlertDialog open={showRenewDialog} onOpenChange={setShowRenewDialog}>
-        <AlertDialogContent className="sm:max-w-md p-8 bg-gradient-to-b from-gray-900/95 via-gray-900/90 to-gray-950/95 border border-white/10 shadow-2xl backdrop-blur-md text-white rounded-2xl">
+        <AlertDialogContent className="sm:max-w-md p-8 bg-gradient-to-b from-gray-900/95 via-gray-900/90 to-gray-950/95 border border-white/10 shadow-2xl backdrop-blur-md rounded-2xl">
           <AlertDialogHeader>
             <AlertDialogTitle>
               {lang === "ar" ? "تأكيد التجديد" : "Confirm Renewal"}

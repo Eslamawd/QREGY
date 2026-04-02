@@ -1,4 +1,5 @@
 import "./globals.css";
+import "leaflet/dist/leaflet.css";
 import Providers from "@/components/layout/Providers";
 import { Poppins, Tajawal } from "next/font/google";
 import Script from "next/script";
@@ -43,7 +44,7 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html dir="rtl" lang="ar">
+    <html dir="rtl" lang="ar" suppressHydrationWarning>
       <body className={`${poppins.variable} ${tajawal.variable} antialiased`}>
         {/* ✅ تحميل pwa.js بشكل صحيح */}
         <Script src="/pwa.js" strategy="afterInteractive" />

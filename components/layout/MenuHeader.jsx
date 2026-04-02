@@ -6,6 +6,7 @@ import { useLanguage } from "@/context/LanguageContext";
 import { useOrder } from "@/context/OrderContext";
 import { useState } from "react";
 import OrdersShow from "../menu/OrdersShow";
+import ThemeToggle from "./ThemeToggle";
 
 export const MenuHeader = ({
   onCartClick,
@@ -14,7 +15,7 @@ export const MenuHeader = ({
   user_id,
   token,
 }) => {
-  const { lang, toggleLang } = useLanguage();
+  const { lang, toggleLang, t } = useLanguage();
   const { currency, setCurrency } = useCurrency();
   const { orders, currentOrder } = useOrder();
   const [orderShow, setOrderShow] = useState(false);
@@ -23,7 +24,7 @@ export const MenuHeader = ({
     orders.reduce(
       (total, order) =>
         total + (order.items?.reduce((sum, i) => sum + i.quantity, 0) || 0),
-      0
+      0,
     );
   return (
     <>
@@ -32,8 +33,7 @@ export const MenuHeader = ({
         initial={{ y: -40, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ type: "spring", stiffness: 100, damping: 15 }}
-        className="fixed top-0 left-0 right-0 z-20 
-                   bg-white/10 backdrop-blur-lg  shadow-lg border-b border-white/20"
+        className="fixed top-0 left-0 right-0 z-20 border-b border-white/25 bg-white/20 shadow-[0_12px_35px_-20px_rgba(15,23,42,0.65)] backdrop-blur-2xl dark:border-white/15 dark:bg-black/20"
       >
         <div className="max-w-6xl mx-auto flex items-center justify-between py-1 px-4">
           {/* ✅ Logo */}
@@ -45,31 +45,45 @@ export const MenuHeader = ({
                 className="h-14 w-14 rounded-full object-cover shadow-md"
               />
             ) : (
-              <span className="text-xl font-bold text-white">Restaurant</span>
+              <span className="text-xl font-bold text-slate-900 dark:text-white">
+                {t("menu.restaurant")}
+              </span>
             )}
           </div>
 
           <div className="flex items-center gap-4">
             {/* ✅ Language Toggle */}
+            <ThemeToggle compact />
 
             {/* ✅ Currency Selector */}
             <select
               value={currency}
               onChange={(e) => setCurrency(e.target.value)}
-              className="px-2 py-1 text-sm rounded-lg border border-white/30 
-                         bg-white/10 text-white focus:outline-none"
+              className="rounded-lg border border-white/35 bg-white/30 px-2 py-1 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-cyan-300/40 dark:border-white/25 dark:bg-white/10 dark:text-white"
             >
-              <option className="bg-black text-white" value="EGP">
+              <option
+                className="bg-white text-slate-900 dark:bg-black dark:text-white"
+                value="EGP"
+              >
                 EGP
               </option>
-              <option className="bg-black text-white" value="USD">
+              <option
+                className="bg-white text-slate-900 dark:bg-black dark:text-white"
+                value="USD"
+              >
                 USD
               </option>
             </select>
             <span
               onClick={toggleLang}
-              className="px-3 py-1 text-sm rounded-full border border-gray-500 
-                         hover:border-gray-300 transition text-white"
+              className="rounded-full border border-white/45 bg-white/25 px-3 py-1 text-sm text-slate-900 transition hover:bg-white/35 dark:border-white/25 dark:bg-white/10 dark:text-white dark:hover:bg-white/15"
+              role="button"
+              aria-label={
+                lang === "ar"
+                  ? t("language.switchToEnglish")
+                  : t("language.switchToArabic")
+              }
+              title={lang === "ar" ? "English" : "العربية"}
             >
               {lang === "ar" ? "EN" : "AR"}
             </span>
@@ -78,9 +92,9 @@ export const MenuHeader = ({
             <div className="relative">
               <span
                 onClick={() => setOrderShow(true)}
-                className=" p-1 justify-center text-center rounded-fullhover:scale-105"
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-white/40 bg-white/20 transition hover:scale-105 hover:bg-white/35 dark:border-white/20 dark:bg-white/10 dark:hover:bg-white/15"
               >
-                <ShoppingCart className="h-8 w-8 text-white" />
+                <ShoppingCart className="h-8 w-8 text-slate-900 dark:text-white" />
               </span>
 
               {/* Red Counter */}

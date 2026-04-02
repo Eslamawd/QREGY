@@ -12,7 +12,7 @@ import {
 import Link from "next/link";
 
 export const Footer = () => {
-  const { lang } = useLanguage();
+  const { lang, t } = useLanguage();
 
   return (
     <footer className="bg-card border-t border-border">
@@ -24,14 +24,12 @@ export const Footer = () => {
               <div className="w-8 h-8 bg-hero-gradient rounded-lg flex items-center justify-center"></div>
               <Link href={"/"} className="flex items-center gap-3">
                 <div className=" font-bold animate-gradient bg-gradient-to-r from-gray-400  to-gray-900 bg-clip-text text-transparent bg-[length:200%_200%] text-4xl">
-                  QR EGY
+                  {t("brand.name")}
                 </div>
               </Link>
             </div>
             <p className="text-muted-foreground leading-relaxed">
-              {lang === "ar"
-                ? "نظام القوائم الذكية للمطاعم. وفر تجربة رقمية عصرية لعملائك مع إدارة كاملة للطلبات، الكاشير، والمطبخ."
-                : "Smart QR Menu system for restaurants. Deliver a modern digital experience with full control of orders, cashier, and kitchen."}
+              {t("footer.description")}
             </p>
             <div className="flex items-center gap-4">
               <a
@@ -64,7 +62,7 @@ export const Footer = () => {
           {/* Quick Links */}
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-foreground">
-              {lang === "ar" ? "روابط سريعة" : "Quick Links"}
+              {t("footer.quickLinks")}
             </h3>
             <ul className="space-y-3">
               <li>
@@ -72,7 +70,7 @@ export const Footer = () => {
                   href="#"
                   className="text-muted-foreground hover:text-primary transition-colors"
                 >
-                  {lang === "ar" ? "كيف يعمل النظام" : "How it Works"}
+                  {t("footer.howItWorks")}
                 </a>
               </li>
               <li>
@@ -80,7 +78,7 @@ export const Footer = () => {
                   href="#"
                   className="text-muted-foreground hover:text-primary transition-colors"
                 >
-                  {lang === "ar" ? "تسجيل مطعم" : "Restaurant Registration"}
+                  {t("footer.restaurantRegistration")}
                 </a>
               </li>
               <li>
@@ -88,7 +86,7 @@ export const Footer = () => {
                   href="#"
                   className="text-muted-foreground hover:text-primary transition-colors"
                 >
-                  {lang === "ar" ? "إدارة الطلبات" : "Manage Orders"}
+                  {t("footer.manageOrders")}
                 </a>
               </li>
               <li>
@@ -96,7 +94,7 @@ export const Footer = () => {
                   href="#"
                   className="text-muted-foreground hover:text-primary transition-colors"
                 >
-                  {lang === "ar" ? "التقارير الفورية" : "Instant Reports"}
+                  {t("footer.instantReports")}
                 </a>
               </li>
             </ul>
@@ -105,7 +103,7 @@ export const Footer = () => {
           {/* For Restaurants */}
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-foreground">
-              {lang === "ar" ? "للمطاعم" : "For Restaurants"}
+              {t("footer.forRestaurants")}
             </h3>
             <ul className="space-y-3">
               <li>
@@ -113,7 +111,7 @@ export const Footer = () => {
                   href="#"
                   className="text-muted-foreground hover:text-primary transition-colors"
                 >
-                  {lang === "ar" ? "إدارة الكاشير" : "Cashier Management"}
+                  {t("footer.cashierManagement")}
                 </a>
               </li>
               <li>
@@ -121,7 +119,7 @@ export const Footer = () => {
                   href="#"
                   className="text-muted-foreground hover:text-primary transition-colors"
                 >
-                  {lang === "ar" ? "شاشة المطبخ" : "Kitchen Display"}
+                  {t("footer.kitchenDisplay")}
                 </a>
               </li>
               <li>
@@ -129,7 +127,7 @@ export const Footer = () => {
                   href="#"
                   className="text-muted-foreground hover:text-primary transition-colors"
                 >
-                  {lang === "ar" ? "إدارة الحسابات" : "Account Management"}
+                  {t("footer.accountManagement")}
                 </a>
               </li>
               <li>
@@ -137,7 +135,7 @@ export const Footer = () => {
                   href="#"
                   className="text-muted-foreground hover:text-primary transition-colors"
                 >
-                  {lang === "ar" ? "إدارة العملاء" : "Customer Management"}
+                  {t("footer.customerManagement")}
                 </a>
               </li>
             </ul>
@@ -146,7 +144,7 @@ export const Footer = () => {
           {/* Contact Info */}
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-foreground">
-              {lang === "ar" ? "تواصل معنا" : "Contact Us"}
+              {t("footer.contactUs")}
             </h3>
             <div className="space-y-3">
               <div className="flex items-center gap-3">
@@ -170,7 +168,7 @@ export const Footer = () => {
               <div className="flex items-center gap-3">
                 <MapPin className="h-4 w-4 text-primary" />
                 <span className="text-muted-foreground">
-                  {lang === "ar" ? "القاهرة، مصر" : "Cairo, Egypt"}
+                  {t("footer.location")}
                 </span>
               </div>
             </div>
@@ -181,22 +179,20 @@ export const Footer = () => {
 
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-muted-foreground text-sm">
-            {lang === "ar"
-              ? "© 2024 منصة QREGY. جميع الحقوق محفوظة."
-              : "© 2024 QREGY Platform. All rights reserved."}
+            {t("footer.copyright")}
           </p>
           <div className="flex items-center gap-6 text-sm">
             <a
               href="/privacy"
               className="text-muted-foreground hover:text-primary transition-colors"
             >
-              {lang === "ar" ? "سياسة الخصوصية" : "Privacy Policy"}
+              {t("footer.privacy")}
             </a>
             <a
               href="/terms"
               className="text-muted-foreground hover:text-primary transition-colors"
             >
-              {lang === "ar" ? "شروط الاستخدام" : "Terms of Use"}
+              {t("footer.terms")}
             </a>
           </div>
         </div>

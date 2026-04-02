@@ -57,7 +57,7 @@ const RestaurantManagement = ({ userId }) => {
   // الصفحات اللي مش عايز فيها Header و Footer
   const hideLayoutRoutes = ["/admin"];
   const shouldHideLayout = hideLayoutRoutes.some((path) =>
-    pathname.startsWith(path)
+    pathname.startsWith(path),
   );
 
   const fetchRestaurants = async (page = 1) => {
@@ -74,13 +74,13 @@ const RestaurantManagement = ({ userId }) => {
         (data.items && data.items.length === 0)
       ) {
         toast.info(
-          lang === "ar" ? "لا يوجد مطاعم" : "No restaurants available"
+          lang === "ar" ? "لا يوجد مطاعم" : "No restaurants available",
         );
       }
     } catch (error) {
       console.error("Failed to load restaurants", error);
       toast.error(
-        lang === "ar" ? "خطأ في تحميل المطاعم" : "Failed to load restaurants"
+        lang === "ar" ? "خطأ في تحميل المطاعم" : "Failed to load restaurants",
       );
     }
   };
@@ -99,7 +99,7 @@ const RestaurantManagement = ({ userId }) => {
     try {
       await deleteRestaurant(selectedRestaurant.id);
       setRestaurants((prev) =>
-        prev.filter((r) => r.id !== selectedRestaurant.id)
+        prev.filter((r) => r.id !== selectedRestaurant.id),
       );
       setShowDeleteDialog(false);
       toast.success(
@@ -107,13 +107,13 @@ const RestaurantManagement = ({ userId }) => {
           ? `${
               selectedRestaurant.name_ar || selectedRestaurant.name
             } تم الحذف بنجاح`
-          : `${selectedRestaurant.name} deleted successfully`
+          : `${selectedRestaurant.name} deleted successfully`,
       );
       setSelectedRestaurant(null);
     } catch (error) {
       console.error("Failed to delete restaurant", error);
       toast.error(
-        lang === "ar" ? "فشل حذف المطعم" : "Failed to delete restaurant"
+        lang === "ar" ? "فشل حذف المطعم" : "Failed to delete restaurant",
       );
     }
   };
@@ -140,13 +140,16 @@ const RestaurantManagement = ({ userId }) => {
       exit={{ opacity: 0, y: 16 }}
       className="min-h-screen"
     >
-      <Card>
+      <Card className="overflow-hidden rounded-[28px] border border-slate-200/80 bg-white/72 shadow-[0_20px_70px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-white/10 dark:bg-white/7 dark:shadow-[0_22px_80px_rgba(2,8,23,0.45)]">
         <CardHeader className="flex items-center justify-between pb-2">
-          <CardTitle className="text-xl font-bold">
+          <CardTitle className="text-xl font-bold text-slate-950 dark:text-white">
             {lang === "ar" ? "إدارة المطاعم" : "Restaurants Management"}
           </CardTitle>
           <div className="flex items-center gap-3">
-            <Button onClick={handleAddNewRestaurant}>
+            <Button
+              onClick={handleAddNewRestaurant}
+              className="rounded-full bg-slate-950 text-white hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-100"
+            >
               + {lang === "ar" ? "مطعم جديد" : "New Restaurant"}
             </Button>
           </div>
@@ -154,8 +157,8 @@ const RestaurantManagement = ({ userId }) => {
 
         <CardContent>
           {restaurants.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground">
-              <p className="text-lg font-medium">
+            <div className="flex flex-col items-center justify-center py-12 text-center text-slate-500 dark:text-slate-300/70">
+              <p className="text-lg font-medium text-slate-800 dark:text-white">
                 {lang === "ar" ? "لا يوجد مطاعم" : "No restaurants yet"}
               </p>
             </div>
@@ -184,7 +187,7 @@ const RestaurantManagement = ({ userId }) => {
       </Card>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-gradient-to-b from-gray-900/95 via-gray-900/90 to-gray-950/95 border border-white/10 shadow-2xl backdrop-blur-md text-white rounded-2xl">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto rounded-[28px] border border-slate-200/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(248,250,252,0.88))] text-slate-900 shadow-2xl backdrop-blur-md dark:border-white/10 dark:bg-[linear-gradient(180deg,rgba(15,23,42,0.96),rgba(2,6,23,0.88))] dark:text-white">
           <DialogHeader>
             <DialogTitle>
               {isNew
@@ -192,8 +195,8 @@ const RestaurantManagement = ({ userId }) => {
                   ? "إضافة مطعم جديد"
                   : "Add Restaurant"
                 : lang === "ar"
-                ? "تعديل المطعم"
-                : "Update Restaurant"}
+                  ? "تعديل المطعم"
+                  : "Update Restaurant"}
             </DialogTitle>
             <DialogDescription>
               {isNew
@@ -201,8 +204,8 @@ const RestaurantManagement = ({ userId }) => {
                   ? "املأ بيانات المطعم لإنشاءه."
                   : "Fill restaurant details to create."
                 : lang === "ar"
-                ? "قم بتعديل بيانات المطعم ثم احفظ."
-                : "Edit restaurant details and save."}
+                  ? "قم بتعديل بيانات المطعم ثم احفظ."
+                  : "Edit restaurant details and save."}
             </DialogDescription>
           </DialogHeader>
 
@@ -219,7 +222,7 @@ const RestaurantManagement = ({ userId }) => {
               restaurant={selectedRestaurant}
               onSuccess={(updated) => {
                 setRestaurants((prev) =>
-                  prev.map((r) => (r.id === updated.id ? updated : r))
+                  prev.map((r) => (r.id === updated.id ? updated : r)),
                 );
                 setIsDialogOpen(false);
               }}
@@ -230,7 +233,7 @@ const RestaurantManagement = ({ userId }) => {
       </Dialog>
 
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent className="bg-gradient-to-b from-gray-900/95 via-gray-900/90 to-gray-950/95 border border-white/10 shadow-2xl backdrop-blur-md text-white rounded-2xl">
+        <AlertDialogContent className="rounded-[28px] border border-slate-200/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(248,250,252,0.88))] text-slate-900 shadow-2xl backdrop-blur-md dark:border-white/10 dark:bg-[linear-gradient(180deg,rgba(15,23,42,0.96),rgba(2,6,23,0.88))] dark:text-white">
           <AlertDialogHeader>
             <AlertDialogTitle>
               {lang === "ar" ? "هل أنت متأكد؟" : "Are you sure?"}

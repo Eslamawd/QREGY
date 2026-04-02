@@ -2,6 +2,7 @@
 
 import React from "react";
 import { useSearchParams } from "next/navigation";
+import NearbyRestaurantsExplorer from "@/components/menu/NearbyRestaurantsExplorer";
 import MenuShowCategory from "@/components/menu/MenuShowCategory";
 
 function Page() {
@@ -13,15 +14,9 @@ function Page() {
   const user_id = searchParams.get("user");
   const token = searchParams.get("token");
 
-  // 🧠 تحقق بسيط إن القيم موجودة
+  // إذا لم يتم تمرير مطعم، اعرض شاشة المطاعم القريبة
   if (!restaurant_id || !user_id || !token) {
-    return (
-      <div className="flex h-screen items-center justify-center text-center">
-        <p className="text-red-600 text-lg font-semibold">
-          ❌ الرابط غير صالح أو البيانات ناقصة
-        </p>
-      </div>
-    );
+    return <NearbyRestaurantsExplorer />;
   }
 
   // ✅ تمرير البيانات للمكوّن الرئيسي

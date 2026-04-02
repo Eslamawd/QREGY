@@ -1,12 +1,169 @@
 "use client";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { QrCode, ShoppingCart, ChefHat, BarChart3 } from "lucide-react";
+import { QrCode, ShoppingCart, ChefHat, MapPinned } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
+
+const useSequentialTypewriter = (
+  lines,
+  {
+    headlineTypingSpeed = 55,
+    paragraphTypingSpeed = 22,
+    deletingSpeed = 20,
+    holdMs = 1700,
+    linePauseMs = 240,
+    restartPauseMs = 500,
+  } = {},
+) => {
+  const [displayLines, setDisplayLines] = useState(["", "", ""]);
+  const [mode, setMode] = useState("typing");
+  const [activeLine, setActiveLine] = useState(0);
+
+  useEffect(() => {
+    setDisplayLines(["", "", ""]);
+    setMode("typing");
+    setActiveLine(0);
+  }, [lines]);
+
+  useEffect(() => {
+    const lastLineIndex = lines.length - 1;
+    const currentText = lines[activeLine] || "";
+    const currentDisplay = displayLines[activeLine] || "";
+
+    let delay = deletingSpeed;
+    if (mode === "typing") {
+      delay =
+        activeLine === lastLineIndex
+          ? paragraphTypingSpeed
+          : headlineTypingSpeed;
+    } else if (mode === "holding") {
+      delay = holdMs;
+    } else if (mode === "restart") {
+      delay = restartPauseMs;
+    } else {
+      delay = deletingSpeed;
+    }
+
+    const timer = setTimeout(
+      () => {
+        if (mode === "typing") {
+          if (currentDisplay.length < currentText.length) {
+            setDisplayLines((prev) => {
+              const next = [...prev];
+              next[activeLine] = currentText.slice(
+                0,
+                currentDisplay.length + 1,
+              );
+              return next;
+            });
+            return;
+          }
+
+          if (activeLine < lastLineIndex) {
+            setActiveLine((line) => line + 1);
+            return;
+          }
+
+          setMode("holding");
+          return;
+        }
+
+        if (mode === "holding") {
+          setMode("deleting");
+          setActiveLine(lastLineIndex);
+          return;
+        }
+
+        if (mode === "deleting") {
+          if (currentDisplay.length > 0) {
+            setDisplayLines((prev) => {
+              const next = [...prev];
+              next[activeLine] = currentDisplay.slice(
+                0,
+                currentDisplay.length - 1,
+              );
+              return next;
+            });
+            return;
+          }
+
+          if (activeLine > 0) {
+            setActiveLine((line) => line - 1);
+            return;
+          }
+
+          setMode("restart");
+          return;
+        }
+
+        if (mode === "restart") {
+          setMode("typing");
+          setActiveLine(0);
+        }
+      },
+      mode === "typing" && currentDisplay.length === currentText.length
+        ? linePauseMs
+        : delay,
+    );
+
+    return () => clearTimeout(timer);
+  }, [
+    activeLine,
+    deletingSpeed,
+    displayLines,
+    headlineTypingSpeed,
+    holdMs,
+    lines,
+    linePauseMs,
+    mode,
+    paragraphTypingSpeed,
+    restartPauseMs,
+  ]);
+
+  const cursorLine =
+    mode === "deleting" || mode === "holding" ? activeLine : activeLine;
+  return { displayLines, cursorLine, isDeleting: mode === "deleting" };
+};
 
 const Hero = () => {
   const { lang } = useLanguage();
+  const heroLines = useMemo(
+    () =>
+      lang === "ar"
+        ? [
+            "اطلب من أي مكان",
+            "وشغّل مطعمك بذكاء",
+            "عميلك يطلب حسب اللوكيشن من أي مكان، وانت تدير الطلبات والكاشير والمطبخ وتزود مبيعاتك من منصة واحدة.",
+          ]
+        : [
+            "Order From Anywhere",
+            "Run Your Restaurant Smarter",
+            "Customers can order with location support from anywhere, while you manage orders, cashier, and kitchen from one unified platform.",
+          ],
+    [lang],
+  );
+
+  const { displayLines, cursorLine, isDeleting } =
+    useSequentialTypewriter(heroLines);
+
+  const renderLineWithCursor = (lineText, lineIndex, className = "") => (
+    <span aria-label={heroLines[lineIndex]} className={className}>
+      {lineText}
+      {cursorLine === lineIndex && (
+        <span
+          aria-hidden="true"
+          className={`ms-1 inline-block select-none text-current ${
+            isDeleting ? "opacity-60" : "opacity-100"
+          }`}
+        >
+          |
+        </span>
+      )}
+    </span>
+  );
+
   const features = [
     {
       icon: <QrCode className="h-8 w-8" />,
@@ -16,25 +173,25 @@ const Hero = () => {
       description_en: "Instant menus by scanning the code",
     },
     {
+      icon: <MapPinned className="h-8 w-8" />,
+      title: "طلب باللوكيشن",
+      title_en: "Location-based Orders",
+      description: "عميلك يطلب من أي مكان بسهولة",
+      description_en: "Customers order from anywhere with location support",
+    },
+    {
       icon: <ShoppingCart className="h-8 w-8" />,
-      title: "طلبات سريعة",
-      title_en: "Fast Ordering",
-      description: "نظام طلبات سهل وسريع",
-      description_en: "Easy and fast ordering system",
+      title: "بيع أسرع",
+      title_en: "Faster Selling",
+      description: "سلة طلب ذكية ومعدل تحويل أعلى",
+      description_en: "Smart cart flow with higher conversion",
     },
     {
       icon: <ChefHat className="h-8 w-8" />,
-      title: "شاشة المطبخ",
-      title_en: "Kitchen Display",
-      description: "إدارة الطلبات لحظياً",
-      description_en: "Real-time order management",
-    },
-    {
-      icon: <BarChart3 className="h-8 w-8" />,
-      title: "تقارير ذكية",
-      title_en: "Smart Reports",
-      description: "تحليلات وإحصائيات دقيقة",
-      description_en: "Accurate analytics and statistics",
+      title: "تشغيل كامل",
+      title_en: "Full Operations",
+      description: "إدارة المطبخ والكاشير والطلبات لحظياً",
+      description_en: "Real-time kitchen, cashier, and order control",
     },
   ];
 
@@ -58,18 +215,16 @@ const Hero = () => {
           >
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold ">
               <span className="animate-gradient bg-gradient-to-r from-emerald-400 via-cyan-400 to-blue-500 bg-clip-text text-transparent bg-[length:200%_200%]">
-                {lang === "ar" ? "نظام القوائم الذكية" : "Smart Menu System"}
+                {renderLineWithCursor(displayLines[0], 0)}
               </span>
               <br />
               <span className="text-foreground">
-                {lang === "ar" ? "للمطاعم الحديثة" : "For Modern Restaurants"}
+                {renderLineWithCursor(displayLines[1], 1)}
               </span>
             </h1>
 
             <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto lg:mx-0 font-cairo">
-              {lang === "ar"
-                ? "حوّل مطعمك إلى تجربة رقمية عصرية. قوائم تفاعلية، طلبات سريعة، وإدارة احترافية."
-                : "Transform your restaurant into a modern digital experience. Interactive menus, fast orders, and professional management."}
+              {renderLineWithCursor(displayLines[2], 2)}
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-end pt-4">
@@ -96,7 +251,7 @@ const Hero = () => {
           </motion.div>
 
           {/* Features Grid with Motion Delay */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6 [perspective:1200px] sm:grid-cols-2">
             {features.map((feature, i) => (
               <motion.div
                 key={i}
@@ -124,7 +279,12 @@ const FeatureCard = ({
   description_en,
 }) => {
   return (
-    <div className="group bg-card border border-border rounded-2xl p-6 shadow-soft hover:shadow-card transition-all duration-300 hover:-translate-y-1">
+    <motion.div
+      whileHover={{ rotateX: -5, rotateY: 5, y: -8 }}
+      transition={{ type: "spring", stiffness: 240, damping: 18 }}
+      style={{ transformStyle: "preserve-3d" }}
+      className="group rounded-2xl border border-border bg-card p-6 shadow-soft transition-all duration-300 hover:shadow-card"
+    >
       <div className="text-primary group-hover:text-emerald-600 transition-colors mb-3">
         {icon}
       </div>
@@ -134,7 +294,7 @@ const FeatureCard = ({
       <p className="text-sm text-muted-foreground">
         {lang === "ar" ? description : description_en}
       </p>
-    </div>
+    </motion.div>
   );
 };
 

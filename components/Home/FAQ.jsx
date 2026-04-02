@@ -13,6 +13,14 @@ const faqs = [
       "Once your restaurant is registered, you get a unique QR code. Customers scan it to open the menu instantly, place orders online, and the order goes directly to the kitchen.",
   },
   {
+    question_ar: "هل أقدر أستقبل طلبات باللوكيشن من أي مكان؟",
+    answer_ar:
+      "نعم، العميل يقدر يطلب من أي مكان مع تحديد الموقع، والنظام يوصّل الطلب مباشرة للإدارة والمطبخ عشان تبدأ التنفيذ بسرعة.",
+    question_en: "Can I receive location-based orders from anywhere?",
+    answer_en:
+      "Yes. Customers can place orders from anywhere with location details, and orders are pushed directly to your management and kitchen flow in real time.",
+  },
+  {
     question_ar: "هل النظام يدعم أكثر من لغة؟",
     answer_ar:
       "نعم ✅ النظام متوفر بالعربية والإنجليزية ليتناسب مع كل العملاء.",
@@ -50,27 +58,38 @@ export default function FAQ() {
     <section
       id="faq"
       dir={isAr ? "rtl" : "ltr"}
-      className="pt-20 pb-10 text-white"
+      className="relative pt-20 pb-10 text-white"
     >
-      <div className="max-w-4xl mx-auto px-4">
-        <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 font-cairo">
-          {isAr ? "الأسئلة الشائعة" : "Frequently Asked Questions"}
-        </h2>
+      <div className="pointer-events-none absolute inset-x-0 top-8 mx-auto h-56 max-w-4xl bg-[radial-gradient(circle_at_center,rgba(34,211,238,0.16),transparent_72%)]" />
+      <div className="relative z-10 mx-auto max-w-4xl px-4">
+        <div className="mb-12 text-center">
+          <span className="inline-flex items-center rounded-full border border-cyan-400/25 bg-cyan-500/10 px-4 py-1 text-xs font-semibold tracking-wide text-cyan-200">
+            {isAr
+              ? "إجابات واضحة قبل الاشتراك"
+              : "Clear answers before you subscribe"}
+          </span>
+          <h2 className="mt-4 text-3xl font-bold font-cairo md:text-4xl">
+            {isAr ? "الأسئلة الشائعة" : "Frequently Asked Questions"}
+          </h2>
+        </div>
 
-        <div className="space-y-4">
+        <div className="space-y-4 [perspective:1200px]">
           {faqs.map((faq, index) => (
-            <div
+            <motion.div
               key={index}
-              className="border border-gray-700 rounded-2xl overflow-hidden shadow-md bg-gray-800/50 backdrop-blur-sm"
+              whileHover={{ rotateX: -3, rotateY: 3, y: -3 }}
+              transition={{ type: "spring", stiffness: 260, damping: 20 }}
+              style={{ transformStyle: "preserve-3d" }}
+              className="overflow-hidden rounded-2xl border border-white/15 bg-[linear-gradient(165deg,rgba(255,255,255,0.14),rgba(255,255,255,0.04))] shadow-[0_16px_40px_-22px_rgba(0,0,0,0.65)] backdrop-blur-md"
             >
               <button
                 onClick={() => toggleFAQ(index)}
-                className="w-full flex justify-between items-center p-5 text-lg font-medium text-gray-100 hover:text-orange-400 transition-colors"
+                className="flex w-full items-center justify-between p-4 text-base font-medium text-gray-100 transition-colors hover:text-cyan-300 md:p-5 md:text-lg"
               >
                 <span className="text-start">
                   {isAr ? faq.question_ar : faq.question_en}
                 </span>
-                <span className="text-2xl">
+                <span className="text-xl md:text-2xl">
                   {openIndex === index ? "−" : "+"}
                 </span>
               </button>
@@ -82,13 +101,13 @@ export default function FAQ() {
                     animate={{ height: "auto", opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
                     transition={{ duration: 0.3 }}
-                    className="px-5 pb-4 text-gray-300 leading-relaxed font-cairo"
+                    className="px-4 pb-4 text-sm leading-relaxed text-gray-200/90 font-cairo md:px-5 md:text-base"
                   >
                     {isAr ? faq.answer_ar : faq.answer_en}
                   </motion.div>
                 )}
               </AnimatePresence>
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>

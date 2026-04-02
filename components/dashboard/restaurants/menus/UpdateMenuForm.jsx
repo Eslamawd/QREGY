@@ -14,7 +14,9 @@ import { useLanguage } from "@/context/LanguageContext";
 function UpdateMenuForm({ onSuccess, onCancel, menu }) {
   const [formData, setFormData] = useState({
     name: menu?.name || "",
+    image: null,
   });
+  const [previewImage, setPreviewImage] = useState(menu?.image || "");
   const [isLoading, setIsLoading] = useState(false);
   const { lang } = useLanguage();
   const router = useRouter();
@@ -24,13 +26,21 @@ function UpdateMenuForm({ onSuccess, onCancel, menu }) {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleImageChange = (e) => {
+    const file = e.target.files?.[0] || null;
+    setFormData((prev) => ({ ...prev, image: file }));
+    if (file) {
+      setPreviewImage(URL.createObjectURL(file));
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.name.trim()) {
       toast.error(
         lang === "ar"
           ? "الرجاء إدخال جميع الحقول المطلوبة"
-          : "Please fill all required fields"
+          : "Please fill all required fields",
       );
       return;
     }
@@ -42,7 +52,7 @@ function UpdateMenuForm({ onSuccess, onCancel, menu }) {
         toast.success(
           lang === "ar"
             ? "تم تحديث القائمة بنجاح ✅"
-            : "Menu updated successfully ✅"
+            : "Menu updated successfully ✅",
         );
         onSuccess && onSuccess(res);
         onCancel && onCancel();
@@ -53,7 +63,7 @@ function UpdateMenuForm({ onSuccess, onCancel, menu }) {
       toast.error(
         lang === "ar"
           ? "حدث خطأ أثناء تحديث القائمة"
-          : "Failed to updated restaurant"
+          : "Failed to updated restaurant",
       );
     } finally {
       setIsLoading(false);
@@ -83,6 +93,26 @@ function UpdateMenuForm({ onSuccess, onCancel, menu }) {
             required
           />
         </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="image">
+            {lang === "ar" ? "صورة المنيو" : "Menu Image"}
+          </Label>
+          <Input
+            id="image"
+            name="image"
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+          />
+          {previewImage ? (
+            <img
+              src={previewImage}
+              alt="menu preview"
+              className="h-24 w-full rounded-lg object-cover border border-border"
+            />
+          ) : null}
+        </div>
       </div>
       <Separator />
 
@@ -102,8 +132,8 @@ function UpdateMenuForm({ onSuccess, onCancel, menu }) {
               ? "جارٍ الحفظ..."
               : "Saving..."
             : lang === "ar"
-            ? "تحديث القائمة"
-            : "Updated Menu"}
+              ? "تحديث القائمة"
+              : "Updated Menu"}
         </Button>
       </div>
     </motion.form>

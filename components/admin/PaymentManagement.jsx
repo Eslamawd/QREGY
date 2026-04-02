@@ -92,8 +92,8 @@ const PaymentManagement = () => {
         payments.filter(
           (payment) =>
             payment.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            payment.name.toLowerCase().includes(searchQuery.toLowerCase())
-        )
+            payment.name.toLowerCase().includes(searchQuery.toLowerCase()),
+        ),
       );
     } else {
       setFilteredPayments(payments);
@@ -133,7 +133,7 @@ const PaymentManagement = () => {
       const response = await depositBalance(
         selectedPayment.id,
         { amount: balanceAmount },
-        balanceAction
+        balanceAction,
       );
 
       fetchPayments(currentPage);
@@ -143,7 +143,7 @@ const PaymentManagement = () => {
           ? lang === "ar"
             ? "تم إيداع الرصيد بنجاح"
             : "Balance deposited successfully"
-          : null
+          : null,
       );
     } catch (error) {
       console.error("Failed to update balance", error);
@@ -165,9 +165,9 @@ const PaymentManagement = () => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 20 }}
-      className=" text-gray-200"
+      className="text-foreground"
     >
-      <Card>
+      <Card className="border-border/70 bg-card/90 text-card-foreground backdrop-blur">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-xl font-bold">
             {lang === "ar" ? "إدارة المدفوعات" : "Payment Management"}
@@ -200,8 +200,8 @@ const PaymentManagement = () => {
                     ? "حاول تعديل نص البحث"
                     : "Try adjusting your search"
                   : lang === "ar"
-                  ? "لم يتم تسجيل أي مستخدم بعد"
-                  : "No payments have been registered yet"}
+                    ? "لم يتم تسجيل أي مستخدم بعد"
+                    : "No payments have been registered yet"}
               </p>
             </div>
           ) : (
@@ -249,8 +249,8 @@ const PaymentManagement = () => {
                             payment.status === "approved"
                               ? "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400"
                               : payment.status === "rejected"
-                              ? "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400"
-                              : "bg-yellow-200 text-black dark:bg-red-900/20 dark:text-red-400"
+                                ? "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400"
+                                : "bg-yellow-200 text-black dark:bg-red-900/20 dark:text-red-400"
                           }`}
                         >
                           {payment.status === "approved"
@@ -258,14 +258,14 @@ const PaymentManagement = () => {
                               ? "مقبول"
                               : "Approved"
                             : payment.status === "rejected"
-                            ? lang === "ar"
-                              ? "مرفوض"
-                              : "Rejected"
-                            : payment.status === "pending"
-                            ? lang === "ar"
-                              ? "قيد الانتظار"
-                              : "Pending"
-                            : null}
+                              ? lang === "ar"
+                                ? "مرفوض"
+                                : "Rejected"
+                              : payment.status === "pending"
+                                ? lang === "ar"
+                                  ? "قيد الانتظار"
+                                  : "Pending"
+                                : null}
                         </span>
                       </TableCell>
                       <TableCell className="text-right">
@@ -288,7 +288,7 @@ const PaymentManagement = () => {
                             <SelectTrigger className="w-[110px]">
                               <SelectValue />
                             </SelectTrigger>
-                            <SelectContent className="bg-black">
+                            <SelectContent className="border-border bg-popover text-popover-foreground">
                               <SelectItem value="pending">
                                 {lang === "ar" ? "معلق" : "Pending"}
                               </SelectItem>
@@ -332,7 +332,7 @@ const PaymentManagement = () => {
       {/* نافذة إدارة الرصيد */}
       <motion.div dir={lang === "ar" ? "rtl" : "ltr"}>
         <Dialog open={showImageDialog} onOpenChange={setShowImageDialog}>
-          <DialogContent className="bg-black  max-w-md">
+          <DialogContent className="max-w-md border-border bg-popover text-popover-foreground">
             <DialogHeader>
               <DialogTitle>
                 {lang === "ar" ? "صورة الدفع" : "Payment Image"}
@@ -358,7 +358,7 @@ const PaymentManagement = () => {
       {/* نافذة إدارة الرصيد */}
       <motion.div dir={lang === "ar" ? "rtl" : "ltr"}>
         <Dialog open={showBalanceDialog} onOpenChange={setShowBalanceDialog}>
-          <DialogContent className="bg-black  max-w-md">
+          <DialogContent className="max-w-md border-border bg-popover text-popover-foreground">
             <DialogHeader>
               <DialogTitle>
                 <motion.div dir={lang === "ar" ? "rtl" : "ltr"}>
@@ -367,8 +367,8 @@ const PaymentManagement = () => {
                       ? "إيداع"
                       : "Deposit"
                     : lang === "ar"
-                    ? "سحب"
-                    : "Withdraw"}
+                      ? "سحب"
+                      : "Withdraw"}
                 </motion.div>
               </DialogTitle>
               <DialogDescription>
@@ -377,8 +377,8 @@ const PaymentManagement = () => {
                     ? "إضافة أموال إلى رصيد المستخدم"
                     : "Add funds to the payment's account balance"
                   : lang === "ar"
-                  ? "إزالة أموال من رصيد المستخدم"
-                  : "Remove funds from the payment's account balance"}
+                    ? "إزالة أموال من رصيد المستخدم"
+                    : "Remove funds from the payment's account balance"}
               </DialogDescription>
             </DialogHeader>
 
@@ -453,8 +453,8 @@ const PaymentManagement = () => {
                     ? "إضافة رصيد"
                     : "Add Funds"
                   : lang === "ar"
-                  ? "سحب رصيد"
-                  : "Remove Funds"}
+                    ? "سحب رصيد"
+                    : "Remove Funds"}
               </Button>
             </DialogFooter>
           </DialogContent>

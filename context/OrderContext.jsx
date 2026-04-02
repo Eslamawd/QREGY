@@ -1,8 +1,25 @@
 "use client";
 import { addNewOrder, getOrderByUser } from "@/lib/orderApi";
 import { createContext, useContext, useState, useEffect } from "react";
+import { toast } from "sonner";
 
 const OrderContext = createContext();
+
+const normalizeComment = (value) => (value || "").trim();
+
+const buildLineKey = (itemId, options = [], comment = "") => {
+  const optionIds = options
+    .map((opt) => Number(opt.id))
+    .filter(Boolean)
+    .sort((a, b) => a - b)
+    .join("-");
+
+  return `${itemId}::${optionIds}::${normalizeComment(comment)}`;
+};
+
+const resolveExistingLineKey = (lineItem) =>
+  lineItem.line_key ||
+  buildLineKey(lineItem.id, lineItem.options || [], lineItem.comment || "");
 
 export const OrderProvider = ({ children }) => {
   // ✅ كل الطلبات المحفوظة (قديمة + جديدة)
@@ -20,6 +37,8 @@ export const OrderProvider = ({ children }) => {
   }));
 
   const [totalPrice, setTotalPrice] = useState(0);
+  const [deliveryAddress, setDeliveryAddress] = useState("");
+  const [customerLocation, setCustomerLocation] = useState(null);
 
   // ✅ حساب السعر الكلي للطلب الحالي
   useEffect(() => {
@@ -30,7 +49,7 @@ export const OrderProvider = ({ children }) => {
         (parseFloat(item.price) +
           item.options.reduce(
             (sum, opt) => sum + parseFloat(opt.price || 0),
-            0
+            0,
           )) *
         item.quantity;
       return acc + itemPrice;
@@ -41,38 +60,53 @@ export const OrderProvider = ({ children }) => {
 
   // ✅ إضافة صنف للطلب الحالي
   const addToOrder = (item, quantity = 1, options = []) => {
+    const lineKey = buildLineKey(item.id, options, item.comment);
+
     setCurrentOrder((prev) => {
       const safePrev = prev?.items
         ? prev
         : { items: [], restaurant_id: null, table_id: null, status: "pending" };
-      const exists = safePrev.items.find((i) => i.id === item.id);
+
+      const exists = safePrev.items.find(
+        (lineItem) => resolveExistingLineKey(lineItem) === lineKey,
+      );
+
       if (exists) {
         return {
           ...safePrev,
-          items: safePrev.items.map((i) =>
-            i.id === item.id
+          items: safePrev.items.map((lineItem) =>
+            resolveExistingLineKey(lineItem) === lineKey
               ? {
-                  ...i,
-                  quantity: i.quantity + quantity,
-                  options: [...i.options, ...options],
-                  comment: item.comment || i.comment,
+                  ...lineItem,
+                  line_key: lineKey,
+                  quantity: lineItem.quantity + quantity,
                 }
-              : i
+              : lineItem,
           ),
         };
       }
+
       return {
         ...safePrev,
-        items: [...safePrev.items, { ...item, quantity, options }],
+        items: [
+          ...safePrev.items,
+          { ...item, quantity, options, line_key: lineKey },
+        ],
       };
     });
   };
 
   // ✅ حذف صنف
-  const removeFromOrder = (itemId) => {
+  const removeFromOrder = (lineKeyOrItemId) => {
     setCurrentOrder((prev) => ({
       ...prev,
-      items: prev.items.filter((i) => i.id !== itemId),
+      items: prev.items.filter((lineItem) => {
+        const existingLineKey = resolveExistingLineKey(lineItem);
+        return (
+          existingLineKey !== lineKeyOrItemId &&
+          String(lineItem.id) !== String(lineKeyOrItemId)
+        );
+      }),
     }));
   };
 
@@ -88,6 +122,8 @@ export const OrderProvider = ({ children }) => {
       table_id: null,
       status: "pending",
     });
+    setDeliveryAddress("");
+    setCustomerLocation(null);
   };
 
   // ✅ بدء طلب جديد
@@ -109,7 +145,7 @@ export const OrderProvider = ({ children }) => {
     // نحدث في قائمة الطلبات
     setOrders((prev) => {
       const updated = prev.map((o) =>
-        o.id === orderId ? { ...o, status } : o
+        o.id === orderId ? { ...o, status } : o,
       );
       localStorage.setItem("orders", JSON.stringify(updated));
       return updated;
@@ -117,23 +153,44 @@ export const OrderProvider = ({ children }) => {
   };
 
   // ✅ تجهيز البيانات للإرسال
-  const preparePayload = () => ({
-    restaurant_id: currentOrder.restaurant_id,
-    table_id: currentOrder.table_id,
-    total_price: totalPrice.toFixed(2),
-    items: currentOrder.items.map((i) => ({
-      item_id: i.id,
-      comment: i.comment,
-      quantity: i.quantity,
-      options: i.options.map((opt) => opt.id),
-    })),
-  });
+  const preparePayload = () => {
+    let resolvedLocation = customerLocation;
+
+    if (!resolvedLocation) {
+      try {
+        const savedLocation = localStorage.getItem("qregy-customer-location");
+        if (savedLocation) {
+          const parsed = JSON.parse(savedLocation);
+          if (parsed?.isSet && parsed?.lat && parsed?.lng) {
+            resolvedLocation = parsed;
+          }
+        }
+      } catch {
+        // Ignore invalid location cache.
+      }
+    }
+
+    return {
+      restaurant_id: currentOrder.restaurant_id,
+      table_id: currentOrder.table_id,
+      total_price: totalPrice.toFixed(2),
+      customer_lat: resolvedLocation?.lat,
+      customer_lng: resolvedLocation?.lng,
+      delivery_address: deliveryAddress.trim() || undefined,
+      items: currentOrder.items.map((i) => ({
+        item_id: i.id,
+        comment: i.comment,
+        quantity: i.quantity,
+        options: i.options.map((opt) => opt.id),
+      })),
+    };
+  };
 
   const updateOrderStatus = (orderId, newStatus) => {
     setOrders((prev) =>
       prev.map((order) =>
-        order.id === orderId ? { ...order, status: newStatus } : order
-      )
+        order.id === orderId ? { ...order, status: newStatus } : order,
+      ),
     );
   };
 
@@ -156,6 +213,20 @@ export const OrderProvider = ({ children }) => {
       return res;
     } catch (err) {
       console.error("❌ Error sending order:", err);
+      const apiError = err?.response?.data;
+      const errorCode = apiError?.code;
+
+      if (errorCode === "out_of_delivery_range") {
+        toast.error(
+          `Outside delivery range (${apiError.distance_km} km / ${apiError.delivery_radius_km} km)`,
+        );
+      } else if (errorCode === "customer_location_required") {
+        toast.error("Please set your location before submitting this order");
+      } else {
+        toast.error(apiError?.message || "Failed to submit order");
+      }
+
+      throw err;
     }
   };
 
@@ -175,6 +246,10 @@ export const OrderProvider = ({ children }) => {
         setStatus,
         totalPrice,
         submitOrder,
+        deliveryAddress,
+        setDeliveryAddress,
+        customerLocation,
+        setCustomerLocation,
       }}
     >
       {children}

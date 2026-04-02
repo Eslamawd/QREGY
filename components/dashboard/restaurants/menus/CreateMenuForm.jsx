@@ -15,7 +15,9 @@ function CreateMenuForm({ onSuccess, onCancel, id }) {
   const [formData, setFormData] = useState({
     name: "",
     restaurant_id: id,
+    image: null,
   });
+  const [previewImage, setPreviewImage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { lang } = useLanguage();
   const router = useRouter();
@@ -25,13 +27,23 @@ function CreateMenuForm({ onSuccess, onCancel, id }) {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleImageChange = (e) => {
+    const file = e.target.files?.[0] || null;
+    setFormData((prev) => ({ ...prev, image: file }));
+    if (file) {
+      setPreviewImage(URL.createObjectURL(file));
+    } else {
+      setPreviewImage("");
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.name.trim()) {
       toast.error(
         lang === "ar"
           ? "الرجاء إدخال جميع الحقول المطلوبة"
-          : "Please fill all required fields"
+          : "Please fill all required fields",
       );
       return;
     }
@@ -43,7 +55,7 @@ function CreateMenuForm({ onSuccess, onCancel, id }) {
         toast.success(
           lang === "ar"
             ? "تم إنشاء القائمة بنجاح ✅"
-            : "Menu created successfully ✅"
+            : "Menu created successfully ✅",
         );
         onSuccess && onSuccess(res);
         onCancel && onCancel();
@@ -54,7 +66,7 @@ function CreateMenuForm({ onSuccess, onCancel, id }) {
       toast.error(
         lang === "ar"
           ? "حدث خطأ أثناء إنشاء القائمة"
-          : "Failed to create restaurant"
+          : "Failed to create restaurant",
       );
     } finally {
       setIsLoading(false);
@@ -84,6 +96,26 @@ function CreateMenuForm({ onSuccess, onCancel, id }) {
             required
           />
         </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="image">
+            {lang === "ar" ? "صورة المنيو" : "Menu Image"}
+          </Label>
+          <Input
+            id="image"
+            name="image"
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+          />
+          {previewImage ? (
+            <img
+              src={previewImage}
+              alt="menu preview"
+              className="h-24 w-full rounded-lg object-cover border border-border"
+            />
+          ) : null}
+        </div>
       </div>
       <Separator />
 
@@ -103,8 +135,8 @@ function CreateMenuForm({ onSuccess, onCancel, id }) {
               ? "جارٍ الحفظ..."
               : "Saving..."
             : lang === "ar"
-            ? "إنشاء القائمة"
-            : "Create Menu"}
+              ? "إنشاء القائمة"
+              : "Create Menu"}
         </Button>
       </div>
     </motion.form>

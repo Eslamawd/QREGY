@@ -32,7 +32,7 @@ export default function AddToOrderButton({
   const totalPrice = useMemo(() => {
     const optionsTotal = selectedOptions.reduce(
       (sum, opt) => sum + Number(opt.price || 0),
-      0
+      0,
     );
     return (Number(item.price) + optionsTotal) * quantity;
   }, [selectedOptions, item.price, quantity]);
@@ -58,12 +58,12 @@ export default function AddToOrderButton({
         image: item.image,
       },
       quantity, // ✅ الكمية المختارة
-      selectedOptions
+      selectedOptions,
     );
     toast.success(
       `${lang === "ar" ? "تمت إضافة" : "Added"} ${
         lang === "ar" ? item.name : item.name_en
-      } (${quantity}x)`
+      } (${quantity}x)`,
     );
     setOpen(false);
     setSelectedOptions([]);
@@ -77,40 +77,61 @@ export default function AddToOrderButton({
       <DialogTrigger asChild>
         <Button
           size="sm"
-          className="shadow-button hover:shadow-lg transition-all font-cairo font-semibold bg-black text-white"
+          className="font-cairo relative overflow-hidden rounded-xl border border-orange-200/60 bg-gradient-to-r from-orange-500 to-amber-400 font-semibold text-white shadow-[0_12px_26px_-14px_rgba(234,88,12,0.85)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_30px_-16px_rgba(234,88,12,0.9)]"
         >
           <Plus className="h-4 w-4 ml-1" />
           {lang === "ar" ? "إضافة" : "Add"}
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="font-cairo bg-black">
+      <DialogContent className="font-cairo max-h-[88vh] overflow-y-auto rounded-[26px] border border-slate-200/80 bg-[linear-gradient(160deg,rgba(255,255,255,0.96),rgba(248,250,252,0.92))] text-slate-900 shadow-[0_30px_80px_-30px_rgba(15,23,42,0.45)] dark:border-white/10 dark:bg-[linear-gradient(160deg,rgba(10,15,30,0.96),rgba(5,8,20,0.92))] dark:text-white">
+        <div className="absolute inset-x-4 top-3 h-14 rounded-full bg-gradient-to-r from-orange-400/30 via-amber-300/20 to-cyan-300/20 blur-2xl" />
+
         <DialogHeader>
-          <DialogTitle className="text-lg font-semibold text-gray-50">
+          <DialogTitle className="text-lg font-black tracking-wide">
             {lang === "ar" ? "اختيار الإضافات" : "Choose options"}
           </DialogTitle>
         </DialogHeader>
 
+        <div className="mb-2 grid grid-cols-[92px_1fr] items-center gap-3 rounded-2xl border border-white/40 bg-white/60 p-3 dark:border-white/10 dark:bg-white/5">
+          <img
+            src={item.image}
+            alt={lang === "ar" ? item.name : item.name_en}
+            className="h-20 w-20 rounded-xl object-cover shadow-md"
+          />
+          <div>
+            <p className="text-base font-black leading-tight">
+              {lang === "ar" ? item.name : item.name_en}
+            </p>
+            <p className="mt-1 text-sm text-slate-600 dark:text-slate-300/80">
+              {Number(item.price).toFixed(2)} {lang === "ar" ? "جنيه" : "EGP"}
+            </p>
+          </div>
+        </div>
+
         {item.options?.length > 0 ? (
-          <div className="space-y-2">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
             {item.options.map((opt) => (
               <label
                 key={opt.id}
-                className={`flex items-center justify-between border rounded-lg p-3 cursor-pointer transition-all ${
+                className={`group relative flex cursor-pointer items-center justify-between rounded-xl border p-3 transition-all ${
                   selectedOptions.find((o) => o.id === opt.id)
-                    ? "bg-blue-100 border-blue-700"
-                    : "hover:bg-gray-100"
+                    ? "border-orange-400/70 bg-orange-100/70 shadow-[0_14px_26px_-16px_rgba(234,88,12,0.65)] dark:bg-orange-500/16"
+                    : "border-slate-200/90 bg-white/65 hover:border-orange-300/60 hover:bg-orange-50/65 dark:border-white/12 dark:bg-white/4 dark:hover:bg-white/8"
                 }`}
               >
                 <div>
-                  <p className="font-medium">
+                  <p className="font-bold">
                     {lang === "ar" ? opt.name : opt.name_en}
                   </p>
-                  <p className="text-sm text-gray-500">{opt.price} جنيه</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-300/70">
+                    +{Number(opt.price).toFixed(2)}{" "}
+                    {lang === "ar" ? "جنيه" : "EGP"}
+                  </p>
                 </div>
                 <input
                   type="checkbox"
-                  className="accent-blue-600 w-5 h-5"
+                  className="h-5 w-5 accent-orange-500"
                   checked={!!selectedOptions.find((o) => o.id === opt.id)}
                   onChange={() =>
                     toggleOption({
@@ -125,13 +146,13 @@ export default function AddToOrderButton({
             ))}
           </div>
         ) : (
-          <p className="text-gray-500 text-center py-3">
+          <p className="py-3 text-center text-slate-500 dark:text-slate-300/70">
             {lang === "ar" ? "لا توجد إضافات" : "No options available"}
           </p>
         )}
 
         {/* ✅ الكمية */}
-        <div className="flex items-center justify-center gap-4 mt-5">
+        <div className="mt-5 flex items-center justify-center gap-4 rounded-2xl border border-white/30 bg-white/60 py-3 dark:border-white/10 dark:bg-white/5">
           <Button
             size="icon"
             variant="outline"
@@ -139,7 +160,9 @@ export default function AddToOrderButton({
           >
             <Minus className="h-4 w-4" />
           </Button>
-          <span className="text-lg font-bold">{quantity}</span>
+          <span className="min-w-10 text-center text-lg font-black">
+            {quantity}
+          </span>
           <Button
             size="icon"
             variant="outline"
@@ -151,12 +174,14 @@ export default function AddToOrderButton({
 
         {/* ✅ التعليق */}
         <div className="mt-5">
-          <Label>{lang === "ar" ? "تعليق:" : "Comment:"}</Label>
+          <Label className="text-sm font-bold">
+            {lang === "ar" ? "تعليق الطلب:" : "Order comment:"}
+          </Label>
           <Textarea
             placeholder={
               lang === "ar" ? "أضف تعليقك هنا..." : "Add your comment here..."
             }
-            className="w-full mt-1"
+            className="mt-2 w-full rounded-xl border-slate-200 bg-white/75 dark:border-white/12 dark:bg-white/6"
             rows={3}
             value={comment}
             onChange={(e) => setComment(e.target.value)}
@@ -164,10 +189,10 @@ export default function AddToOrderButton({
         </div>
 
         {/* ✅ السعر الإجمالي */}
-        <div className="mt-6 text-center">
-          <p className="text-lg font-bold">
+        <div className="mt-6 rounded-2xl border border-orange-200/60 bg-gradient-to-r from-orange-50 to-amber-50 p-3 text-center dark:border-orange-300/20 dark:bg-[linear-gradient(90deg,rgba(249,115,22,0.12),rgba(245,158,11,0.12))]">
+          <p className="text-lg font-black">
             {lang === "ar" ? "السعر الكلي:" : "Total:"}{" "}
-            <span className="text-green-600">
+            <span className="text-orange-600 dark:text-amber-300">
               {totalPrice.toFixed(2)} {lang === "ar" ? "جنيه" : "EGP"}
             </span>
           </p>
@@ -176,10 +201,12 @@ export default function AddToOrderButton({
         <DialogFooter>
           <Button
             onClick={handleAdd}
-            className="w-full bg-green-600 hover:bg-green-700 text-white font-cairo mt-4 flex items-center justify-center gap-2"
+            className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-orange-500 to-amber-400 text-white shadow-[0_18px_35px_-18px_rgba(234,88,12,0.92)] hover:from-orange-600 hover:to-amber-500"
           >
             <ShoppingCart className="h-4 w-4" />
-            {lang === "ar" ? "تأكيد الإضافة" : "Confirm"}
+            {lang === "ar"
+              ? `أضف ${lang === "ar" ? item.name : item.name_en}`
+              : `Add ${item.name_en}`}
           </Button>
         </DialogFooter>
       </DialogContent>

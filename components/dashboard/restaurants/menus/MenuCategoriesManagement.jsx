@@ -57,7 +57,7 @@ const MenuCategoriesManagement = ({ menuId }) => {
     } catch (err) {
       console.error(err);
       toast.error(
-        lang === "ar" ? "فشل تحميل الأقسام" : "Failed to load categories"
+        lang === "ar" ? "فشل تحميل الأقسام" : "Failed to load categories",
       );
     }
   };
@@ -92,11 +92,11 @@ const MenuCategoriesManagement = ({ menuId }) => {
       setCategories((prev) => prev.filter((c) => c.id !== selectedCategory.id));
       setShowDeleteDialog(false);
       toast.success(
-        lang === "ar" ? "تم حذف القسم بنجاح" : "Category deleted successfully"
+        lang === "ar" ? "تم حذف القسم بنجاح" : "Category deleted successfully",
       );
     } catch (err) {
       toast.error(
-        lang === "ar" ? "فشل حذف القسم" : "Failed to delete category"
+        lang === "ar" ? "فشل حذف القسم" : "Failed to delete category",
       );
     }
   };
@@ -159,7 +159,7 @@ const MenuCategoriesManagement = ({ menuId }) => {
 
       {/* Dialog الإضافة والتعديل */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-md bg-gradient-to-b from-gray-900/95 via-gray-900/90 to-gray-950/95 border border-white/10 shadow-2xl backdrop-blur-md text-white rounded-2xl">
+        <DialogContent className="max-w-md  rounded-2xl">
           <DialogHeader>
             <DialogTitle>
               {isNew
@@ -167,8 +167,8 @@ const MenuCategoriesManagement = ({ menuId }) => {
                   ? "إضافة قسم جديد"
                   : "Add New Category"
                 : lang === "ar"
-                ? "تعديل القسم"
-                : "Edit Category"}
+                  ? "تعديل القسم"
+                  : "Edit Category"}
             </DialogTitle>
             <DialogDescription>
               {lang === "ar"
@@ -185,7 +185,7 @@ const MenuCategoriesManagement = ({ menuId }) => {
               if (isNew) setCategories((prev) => [saved, ...prev]);
               else
                 setCategories((prev) =>
-                  prev.map((c) => (c.id === saved.id ? saved : c))
+                  prev.map((c) => (c.id === saved.id ? saved : c)),
                 );
               setIsDialogOpen(false);
             }}
@@ -290,8 +290,8 @@ const CategoryForm = ({ isNew, category, menuId, onSuccess, onCancel }) => {
             ? "تم إضافة القسم"
             : "Category added"
           : lang === "ar"
-          ? "تم التحديث بنجاح"
-          : "Updated successfully"
+            ? "تم التحديث بنجاح"
+            : "Updated successfully",
       );
     } catch (err) {
       console.error(err);

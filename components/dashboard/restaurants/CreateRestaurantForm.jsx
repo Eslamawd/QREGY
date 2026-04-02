@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import dynamic from "next/dynamic";
 import { Button } from "../../ui/button";
 import { Input } from "../../ui/Input";
 import { Label } from "../../ui/Label";
@@ -12,17 +13,30 @@ import { addNewRestaurant } from "@/lib/restaurantApi";
 import Image from "next/image";
 import { useLanguage } from "@/context/LanguageContext";
 
+const LocationPicker = dynamic(
+  () => import("@/components/location/LocationPicker"),
+  {
+    ssr: false,
+  },
+);
+
 function CreateRestaurantForm({ onSuccess, onCancel }) {
   const [formData, setFormData] = useState({
     name: "",
     type: "restaurant",
     phone: "",
     address: "",
+    latitude: "",
+    longitude: "",
+    delivery_radius_km: "10",
+    open_time: "09:00",
+    close_time: "23:00",
     logo: null,
     cover: null,
   });
   const [preview, setPreview] = useState({ logo: "", cover: "" });
   const [isLoading, setIsLoading] = useState(false);
+  const [location, setLocation] = useState(null);
   const { lang } = useLanguage();
   const router = useRouter();
 
@@ -43,6 +57,16 @@ function CreateRestaurantForm({ onSuccess, onCancel }) {
     }
   };
 
+  const handleLocationChange = (nextLocation) => {
+    setLocation(nextLocation);
+    setFormData((prev) => ({
+      ...prev,
+      address: nextLocation?.address || prev.address,
+      latitude: nextLocation?.lat ? String(nextLocation.lat) : "",
+      longitude: nextLocation?.lng ? String(nextLocation.lng) : "",
+    }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (
@@ -53,7 +77,7 @@ function CreateRestaurantForm({ onSuccess, onCancel }) {
       toast.error(
         lang === "ar"
           ? "الرجاء إدخال جميع الحقول المطلوبة"
-          : "Please fill all required fields"
+          : "Please fill all required fields",
       );
       return;
     }
@@ -63,14 +87,16 @@ function CreateRestaurantForm({ onSuccess, onCancel }) {
       toast.error(
         lang === "ar"
           ? "يرجى رفع شعار المطعم"
-          : "Please upload the restaurant logo"
+          : "Please upload the restaurant logo",
       );
       return;
     }
 
     if (!formData.cover) {
       toast.error(
-        lang === "ar" ? "يرجى رفع صورة الغلاف" : "Please upload the cover image"
+        lang === "ar"
+          ? "يرجى رفع صورة الغلاف"
+          : "Please upload the cover image",
       );
       return;
     }
@@ -84,7 +110,7 @@ function CreateRestaurantForm({ onSuccess, onCancel }) {
       const res = await addNewRestaurant(formDataObj);
       if (res?.active === false) {
         toast.error(
-          lang === "ar" ? res.message?.message_ar : res.message?.message
+          lang === "ar" ? res.message?.message_ar : res.message?.message,
         );
         return;
       }
@@ -92,7 +118,7 @@ function CreateRestaurantForm({ onSuccess, onCancel }) {
         toast.success(
           lang === "ar"
             ? "تم إنشاء المطعم بنجاح ✅"
-            : "Restaurant created successfully ✅"
+            : "Restaurant created successfully ✅",
         );
         onSuccess && onSuccess(res);
         onCancel && onCancel();
@@ -103,7 +129,7 @@ function CreateRestaurantForm({ onSuccess, onCancel }) {
       toast.error(
         lang === "ar"
           ? "حدث خطأ أثناء إنشاء المطعم"
-          : "Failed to create restaurant"
+          : "Failed to create restaurant",
       );
     } finally {
       setIsLoading(false);
@@ -190,6 +216,78 @@ function CreateRestaurantForm({ onSuccess, onCancel }) {
             required
           />
         </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="delivery_radius_km">
+            {lang === "ar" ? "نطاق التوصيل بالكيلومتر" : "Delivery radius (km)"}
+          </Label>
+          <Input
+            id="delivery_radius_km"
+            name="delivery_radius_km"
+            type="number"
+            min="1"
+            max="100"
+            step="0.5"
+            value={formData.delivery_radius_km}
+            onChange={handleInputChange}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="open_time">
+            {lang === "ar" ? "يفتح الساعة" : "Opens at"}
+          </Label>
+          <Input
+            id="open_time"
+            name="open_time"
+            type="time"
+            value={formData.open_time}
+            onChange={handleInputChange}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="close_time">
+            {lang === "ar" ? "يغلق الساعة" : "Closes at"}
+          </Label>
+          <Input
+            id="close_time"
+            name="close_time"
+            type="time"
+            value={formData.close_time}
+            onChange={handleInputChange}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label>
+            {lang === "ar" ? "إحداثيات المطعم" : "Restaurant coordinates"}
+          </Label>
+          <div className="grid grid-cols-2 gap-3">
+            <Input value={formData.latitude} readOnly placeholder="Latitude" />
+            <Input
+              value={formData.longitude}
+              readOnly
+              placeholder="Longitude"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="space-y-3 rounded-2xl border border-white/10 bg-black/10 p-4">
+        <div>
+          <h3 className="text-sm font-semibold">
+            {lang === "ar"
+              ? "حدد موقع المطعم على الخريطة"
+              : "Set restaurant location on the map"}
+          </h3>
+          <p className="text-xs text-muted-foreground">
+            {lang === "ar"
+              ? "هذا الموقع يُستخدم لعرض مطعمك للعميل القريب منك تلقائيًا."
+              : "This location is used to show your restaurant to nearby customers automatically."}
+          </p>
+        </div>
+        <LocationPicker value={location} onChange={handleLocationChange} />
       </div>
 
       <Separator />
@@ -262,8 +360,8 @@ function CreateRestaurantForm({ onSuccess, onCancel }) {
               ? "جارٍ الحفظ..."
               : "Saving..."
             : lang === "ar"
-            ? "إنشاء المطعم"
-            : "Create Restaurant"}
+              ? "إنشاء المطعم"
+              : "Create Restaurant"}
         </Button>
       </div>
     </motion.form>

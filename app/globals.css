@@ -1,49 +1,153 @@
 @import "tailwindcss";
+
+:root {
+  --background: 210 40% 98%;
+  --foreground: 222.2 47.4% 11.2%;
+  --card: 0 0% 100%;
+  --card-foreground: 222.2 47.4% 11.2%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222.2 47.4% 11.2%;
+  --primary: 23 86% 55%;
+  --primary-foreground: 210 40% 98%;
+  --secondary: 210 40% 96.1%;
+  --secondary-foreground: 222.2 47.4% 11.2%;
+  --muted: 210 40% 96.1%;
+  --muted-foreground: 215.4 16.3% 46.9%;
+  --accent: 186 76% 36%;
+  --accent-foreground: 210 40% 98%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 214.3 31.8% 91.4%;
+  --input: 214.3 31.8% 91.4%;
+  --ring: 23 86% 55%;
+  --radius: 0.75rem;
+
+  --surface-900: #f6f8fc;
+  --surface-800: #eef1f7;
+  --surface-700: #e4e9f4;
+  --text-100: #101322;
+  --text-300: #4b5570;
+  --brand-500: #ef6f28;
+  --brand-400: #ff9a3d;
+  --accent-500: #16a1a4;
+  --ring-soft: 0 0 0 1px rgba(15, 23, 42, 0.12);
+}
+
+.dark {
+  --background: 222.2 47.4% 6.5%;
+  --foreground: 210 40% 96%;
+  --card: 222.2 47.4% 10%;
+  --card-foreground: 210 40% 96%;
+  --popover: 222.2 47.4% 9%;
+  --popover-foreground: 210 40% 96%;
+  --primary: 25 95% 62%;
+  --primary-foreground: 222.2 47.4% 8%;
+  --secondary: 217.2 32.6% 17.5%;
+  --secondary-foreground: 210 40% 96%;
+  --muted: 217.2 32.6% 17.5%;
+  --muted-foreground: 215 20.2% 65.1%;
+  --accent: 186 90% 44%;
+  --accent-foreground: 222.2 47.4% 8%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 217.2 32.6% 22%;
+  --input: 217.2 32.6% 22%;
+  --ring: 25 95% 62%;
+
+  --surface-900: #0a0a0b;
+  --surface-800: #121215;
+  --surface-700: #1a1b22;
+  --text-100: #f4f6fb;
+  --text-300: #c7cad4;
+  --ring-soft: 0 0 0 1px rgba(255, 255, 255, 0.16);
+}
+
 body {
-  background: linear-gradient(140deg, #0f0f0f, #1f1f1f, #2e2e2e);
+  background:
+    radial-gradient(
+      1000px 520px at 12% -5%,
+      rgba(239, 111, 40, 0.18),
+      transparent 55%
+    ),
+    radial-gradient(
+      900px 500px at 92% 8%,
+      rgba(22, 161, 164, 0.14),
+      transparent 55%
+    ),
+    linear-gradient(
+      140deg,
+      var(--surface-900),
+      var(--surface-800),
+      var(--surface-700)
+    );
   background-size: 400% 400%;
   animation: gradientFlow 10s ease infinite;
   min-height: 100vh;
   margin: 0;
-  padding: 0 5px;
-  color: #fff;
+  padding: 0;
+  color: var(--text-100);
   font-family: var(--font-tajawal, Arial, Helvetica, sans-serif);
   overflow-x: hidden;
 }
+
+body {
+  color-scheme: light;
+}
+
+.dark body {
+  color-scheme: dark;
+}
+
 button {
   border: none;
-  border-radius: 9999px; /* pill style */
+  border-radius: 9999px;
   padding: 0.75rem 2rem;
-  background: linear-gradient(135deg, black, gray);
-  color: white;
+  background: linear-gradient(135deg, #ffffff, #e8edf7);
+  color: #111827;
   font-weight: 600;
   font-size: 1rem;
   text-transform: uppercase;
 
   letter-spacing: 0.05em;
   cursor: pointer;
-  transition: all 0.35s ease;
-  box-shadow: 0 4px 20px rgba(6, 182, 212, 0.3),
-    0 2px 8px rgba(52, 211, 153, 0.2);
-  backdrop-filter: blur(6px); /* glass effect */
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
+    background 0.25s ease;
+  box-shadow: 0 6px 18px rgba(17, 24, 39, 0.16);
+  backdrop-filter: blur(6px);
+}
+
+.dark button {
+  background: linear-gradient(135deg, #18181b, #2b2d33);
+  color: white;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.38);
 }
 
 button:hover {
-  transform: translateY(-3px) scale(1.05);
-  box-shadow: 0 8px 25px rgba(6, 182, 212, 0.4),
-    0 4px 12px rgba(52, 211, 153, 0.3);
-  background: linear-gradient(135deg, #d3f8ff, #000000);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(17, 24, 39, 0.2);
+  background: linear-gradient(135deg, #ffffff, #dbe4f1);
+}
+
+.dark button:hover {
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.45);
+  background: linear-gradient(135deg, #222329, #0f1014);
 }
 
 button:active {
   transform: scale(0.97);
 }
 
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+* {
+  box-sizing: border-box;
+}
+
+html {
+  font-family: var(--font-tajawal, Arial, Helvetica, sans-serif);
   line-height: 1.5;
   font-weight: 400;
-  color: black;
+  color: var(--text-100);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -75,4 +179,130 @@ a {
 
 .animate-gradient {
   animation: gradient 60s ease infinite;
+}
+
+.dashboard-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.5) transparent;
+}
+
+.dashboard-scrollbar::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.dashboard-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.35);
+  border-radius: 999px;
+}
+
+/*
+ * Legacy text-color fallback:
+ * Many components still hardcode text-white/text-gray-* without dark variants.
+ * In light mode, force readable text for non-interactive content while keeping
+ * interactive controls (buttons/links/inputs) as authored.
+ */
+html:not(.dark)
+  :is(
+    main,
+    section,
+    article,
+    aside,
+    div,
+    p,
+    span,
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    li,
+    td,
+    th,
+    label,
+    small
+  )[class*="text-white"]:not([class*="dark:text-"]) {
+  color: #0f172a !important;
+}
+
+html:not(.dark)
+  :is(
+    main,
+    section,
+    article,
+    aside,
+    div,
+    p,
+    span,
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    li,
+    td,
+    th,
+    label,
+    small
+  )[class*="text-gray-"]:not([class*="dark:text-"]) {
+  color: #334155 !important;
+}
+
+html:not(.dark)
+  :is(
+    main,
+    section,
+    article,
+    aside,
+    div,
+    p,
+    span,
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    li,
+    td,
+    th,
+    label,
+    small
+  )[class*="text-slate-"]:not([class*="dark:text-"]) {
+  color: #0f172a !important;
+}
+
+html:not(.dark)
+  :is(
+    main,
+    section,
+    article,
+    aside,
+    div,
+    p,
+    span,
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    li,
+    td,
+    th,
+    label,
+    small
+  )[class*="placeholder-white"]:not([class*="dark:placeholder-"])::placeholder {
+  color: rgba(51, 65, 85, 0.62) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

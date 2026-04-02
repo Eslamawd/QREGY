@@ -64,7 +64,7 @@ const ContactsManagement = () => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 20 }}
-      className=" text-gray-200"
+      className="text-foreground"
     >
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">
@@ -105,7 +105,7 @@ const ContactsManagement = () => {
                       {" "}
                       <a
                         href={`mailto:${con.email}`}
-                        className="text-blue-500  hover:text-white hover:underline-offset-2"
+                        className="text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 hover:underline-offset-2"
                       >
                         {con.email}
                       </a>

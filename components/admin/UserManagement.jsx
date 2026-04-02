@@ -104,8 +104,8 @@ const UserManagement = () => {
         users.filter(
           (user) =>
             user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            user.name.toLowerCase().includes(searchQuery.toLowerCase())
-        )
+            user.name.toLowerCase().includes(searchQuery.toLowerCase()),
+        ),
       );
     } else {
       setFilteredUsers(users);
@@ -136,7 +136,7 @@ const UserManagement = () => {
 
       const updatedUser = response.user;
       const updatedUsers = users.map((u) =>
-        u.id === userId ? updatedUser : u
+        u.id === userId ? updatedUser : u,
       );
       setUsers(updatedUsers);
       setFilteredUsers(updatedUsers);
@@ -165,12 +165,12 @@ const UserManagement = () => {
       const response = await depositBalance(
         selectedUser.id,
         { amount: balanceAmount },
-        balanceAction
+        balanceAction,
       );
 
       const updatedUser = response.user;
       const updatedUsers = users.map((u) =>
-        u.id === selectedUser.id ? updatedUser : u
+        u.id === selectedUser.id ? updatedUser : u,
       );
       setUsers(updatedUsers);
       setFilteredUsers(updatedUsers);
@@ -203,9 +203,9 @@ const UserManagement = () => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 20 }}
-      className=" text-gray-200"
+      className="text-foreground"
     >
-      <Card>
+      <Card className="border-border/70 bg-card/90 text-card-foreground backdrop-blur">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-xl font-bold">
             {lang === "ar" ? "إدارة المستخدمين" : "User Management"}
@@ -238,8 +238,8 @@ const UserManagement = () => {
                     ? "حاول تعديل نص البحث"
                     : "Try adjusting your search"
                   : lang === "ar"
-                  ? "لم يتم تسجيل أي مستخدم بعد"
-                  : "No users have been registered yet"}
+                    ? "لم يتم تسجيل أي مستخدم بعد"
+                    : "No users have been registered yet"}
               </p>
             </div>
           ) : (
@@ -294,8 +294,8 @@ const UserManagement = () => {
                               ? "مسؤول"
                               : "Admin"
                             : lang === "ar"
-                            ? "مستخدم"
-                            : "User"}
+                              ? "مستخدم"
+                              : "User"}
                         </span>
                       </TableCell>
                       <TableCell className="text-right">
@@ -322,7 +322,7 @@ const UserManagement = () => {
                             <SelectTrigger className="w-[110px]">
                               <SelectValue />
                             </SelectTrigger>
-                            <SelectContent className="bg-black">
+                            <SelectContent className="border-border bg-popover text-popover-foreground">
                               <SelectItem value="user">
                                 {lang === "ar" ? "مستخدم" : "User"}
                               </SelectItem>
@@ -365,7 +365,7 @@ const UserManagement = () => {
 
       {/* نافذة تأكيد الحذف */}
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent className="bg-black">
+        <AlertDialogContent className="border-border bg-popover text-popover-foreground">
           <AlertDialogHeader>
             <AlertDialogTitle>
               {lang === "ar" ? "هل أنت متأكد؟" : "Are you sure?"}
@@ -397,7 +397,7 @@ const UserManagement = () => {
       {/* نافذة إدارة الرصيد */}
       <motion.div dir={lang === "ar" ? "rtl" : "ltr"}>
         <Dialog open={showBalanceDialog} onOpenChange={setShowBalanceDialog}>
-          <DialogContent className="bg-black  max-w-md">
+          <DialogContent className="max-w-md border-border bg-popover text-popover-foreground">
             <DialogHeader>
               <DialogTitle>
                 <motion.div dir={lang === "ar" ? "rtl" : "ltr"}>
@@ -406,8 +406,8 @@ const UserManagement = () => {
                       ? "إيداع"
                       : "Deposit"
                     : lang === "ar"
-                    ? "سحب"
-                    : "Withdraw"}
+                      ? "سحب"
+                      : "Withdraw"}
                 </motion.div>
               </DialogTitle>
               <DialogDescription>
@@ -416,8 +416,8 @@ const UserManagement = () => {
                     ? "إضافة أموال إلى رصيد المستخدم"
                     : "Add funds to the user's account balance"
                   : lang === "ar"
-                  ? "إزالة أموال من رصيد المستخدم"
-                  : "Remove funds from the user's account balance"}
+                    ? "إزالة أموال من رصيد المستخدم"
+                    : "Remove funds from the user's account balance"}
               </DialogDescription>
             </DialogHeader>
 
@@ -492,8 +492,8 @@ const UserManagement = () => {
                     ? "إضافة رصيد"
                     : "Add Funds"
                   : lang === "ar"
-                  ? "سحب رصيد"
-                  : "Remove Funds"}
+                    ? "سحب رصيد"
+                    : "Remove Funds"}
               </Button>
             </DialogFooter>
           </DialogContent>
